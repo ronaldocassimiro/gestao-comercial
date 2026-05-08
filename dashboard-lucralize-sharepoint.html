@@ -449,7 +449,9 @@ function fv(r,...keys) {
   return '';
 }
 
-function getSituacao(r) { return (fv(r,'Situa_x00e7__x00e3_o','Situacao','Situação')||'').toUpperCase(); }
+function getSituacao(r) { 
+  return (r['Situa_x00e7__x00e3_o'] || r['Situ_x00e7__x00e3_o'] || r.Situacao || r['Situação'] || '').toUpperCase(); 
+}
 function getRegime(r) { return fv(r,'Regime_x0020_Tribut_x00e1_rio_x0020_Ano_x0020_Atual','RegimeTributarioAnoAtual','Regime Tributário Ano Atual','Regime_x0020_Tribut_x00e1_rio_x0020_Ano_x0020_Atual_x003'); }
 
 function safeYM(val) {
@@ -461,14 +463,30 @@ function safeYM(val) {
 }
 
 function getEntradaYM_contab(r) {
-  const v = fv(r,'Data_x0020_do_x0020_Contrato','DataDoContrato','Data do Contrato');
+  const v = fv(r,'DatadoContrato','Data_x0020_do_x0020_Contrato','DataDoContrato','Data do Contrato');
   if (!v) return null;
-  try { const d = new Date(v); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; } catch { return null; }
+  try { const d = new Date(v); if (isNaN(d)) return safeYM(v); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; } catch { return null; }
 }
 
-function getSaidaYM_contab(r) { return safeYM(fv(r,'Compet_x00ea_ncia_x0020_de_x0020_Sa_x00ed_da','CompetênciadeSaída','Competência de Saída')); }
-function getEntradaYM_tech(r) { return safeYM(fv(r,'Compet_x00ea_ncia','Competência','Competencia')); }
-function getSaidaYM_tech(r) { return safeYM(fv(r,'Compet_x00ea_ncia_x0020_da_x0020_Sa_x00ed_da','CompetênciadaSaída','Competência da Saída')); }
+function getSaidaYM_contab(r) { return safeYM(fv(r,'Compet_x00ea_nciadeSa_x00ed_a','Compet_x00ea_ncia_x0020_de_x0020_Sa_x00ed_da','CompetênciadeSaída','Competência de Saída')); }
+function getEntradaYM_tech(r) { 
+  const f11 = fv(r,'field_11','Compet_x00ea_ncia','Competência','Competencia');
+  if (f11) return safeYM(f11);
+  // fallback to Created date
+  const created = r.Created;
+  if (!created) return null;
+  try { const d = new Date(created); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; } catch { return null; }
+}
+function getSaidaYM_tech(r) { 
+  const f = fv(r,'field_15','Compet_x00ea_nciadaSa_x00ed_da','Compet_x00ea_ncia_x0020_da_x0020_Sa_x00ed_da','CompetênciadaSaída');
+  if (f && !isNaN(f) === false) return safeYM(f); // field_15 is a number (dia vencimento), ignore
+  // fallback: use Modified date for inactive/baixada records
+  const sit = getSituacao(r);
+  if (['INATIVO','BAIXADA','SUSPENSO','EM CANCELAMENTO'].includes(sit) && r.Modified) {
+    try { const d = new Date(r.Modified); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; } catch { return null; }
+  }
+  return null;
+}
 
 function countBy(arr, fn) {
   const m = {};
@@ -492,7 +510,7 @@ function applyFilters() {
   let fc = rawContab, ft = rawTech;
   if (sit) {
     fc = fc.filter(r => getSituacao(r) === sit);
-    ft = ft.filter(r => getSituacao(r) === sit);
+    ft = ft.filter(r => { const s = getSituacao(r); return sit === 'ATIVO' ? s === 'ATIVO' : s === sit; });
   }
   if (reg) {
     fc = fc.filter(r => getRegime(r).includes(reg));
@@ -522,7 +540,7 @@ function fmtBRL(v) { return 'R$ ' + Math.round(v/1000) + 'k'; }
 
 function renderGeral(fc, ft) {
   const ativosC = fc.filter(r => getSituacao(r)==='ATIVO');
-  const ativosT = ft.filter(r => ['ATIVO','ATIVA'].includes(getSituacao(r)));
+  const ativosT = ft.filter(r => getSituacao(r) === 'ATIVO');
   const total = fc.length + ft.length;
   const ativos = ativosC.length + ativosT.length;
   const honC = ativosC.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
@@ -559,7 +577,7 @@ function renderGeral(fc, ft) {
 }
 
 function renderTech(ft) {
-  const ativos = ft.filter(r => ['ATIVO','ATIVA'].includes(getSituacao(r)));
+  const ativos = ft.filter(r => getSituacao(r) === 'ATIVO');
   const rec = ativos.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
   renderKPIs('kpi-tech',[
     {label:'Total Tech', value:ft.length, sub:'na base filtrada'},
@@ -572,12 +590,12 @@ function renderTech(ft) {
   mkFlowBar('c-tech-flow', MESES, flow.entradas, flow.saidas);
   mkSaldoBar('c-tech-saldo', MESES, flow.entradas.map((e,i)=>e-flow.saidas[i]));
 
-  mkDoughnut('c-tech-plano', countBy(ft, r=>fv(r,'Plano')), 'leg-tech-plano');
-  mkDoughnut('c-tech-tipo', countBy(ft, r=>fv(r,'Tipo_x0020_de_x0020_Entrada','Tipo de Entrada','TipoDeEntrada')), 'leg-tech-tipo');
+  mkDoughnut('c-tech-plano', countBy(ft, r=>getPlano(r)), 'leg-tech-plano');
+  mkDoughnut('c-tech-tipo', countBy(ft, r=>fv(r,'TipodeEntrada','Tipo_x0020_de_x0020_Entrada','Tipo de Entrada','TipoDeEntrada')), 'leg-tech-tipo');
   mkDoughnut('c-tech-regime', countBy(ft, r=>getRegime(r)), 'leg-tech-regime');
   mkHBar('c-tech-motivo', topN(countBy(ft, r=>fv(r,'Motivo_x0020_da_x0020_Sa_x00ed_da','Motivo da Saída','MotivoDaSaída')),6), '#F62642');
   mkHBar('c-tech-origem', topN(countBy(ft, r=>fv(r,'Origem')),6), '#0C7488');
-  mkDoughnut('c-tech-resp', countBy(ft, r=>fv(r,'Respons_x00e1_vel','Responsável','Responsavel')), 'leg-tech-resp');
+  mkDoughnut('c-tech-resp', countBy(ft, r=>fv(r,'Respons_x00e1_vel_x0028_Escolha_x0029_','Respons_x00e1_vel_x0028_Escolha_','Respons_x00e1_vel','Responsável','Responsavel')), 'leg-tech-resp');
   renderGeo('tech', ft);
 }
 
@@ -711,6 +729,13 @@ function showApp() { document.getElementById('login-screen').style.display='none
 function showLoginErr(msg) { const e=document.createElement('div'); e.style.cssText='color:#F62642;font-size:12px;margin-top:10px;text-align:center'; e.textContent=msg; document.querySelector('.login-card').appendChild(e); }
 
 
+
+// Plano lookup map for Tech
+const PLANO_MAP = {'1':'Essencial','2':'Exclusivo','3':'Plus'};
+function getPlano(r) {
+  const p = fv(r,'Plano','PlanoLookupId');
+  return PLANO_MAP[p] || p || 'N/D';
+}
 // ═══════════════════════════════════
 // GEOGRAFIA
 // ═══════════════════════════════════
@@ -730,7 +755,7 @@ function normalizeEstado(v) {
 }
 
 function getEstado(r) {
-  return normalizeEstado(fv(r,'Estado','estado'));
+  return normalizeEstado(fv(r,'Estado','field_7','estado'));
 }
 
 function getRegiao(estado) {
