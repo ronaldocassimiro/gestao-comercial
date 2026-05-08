@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard de Clientes — Lucralize</title>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --navy: #0E1428;
+    --navy2: #181F26;
+    --teal: #0C7488;
+    --teal-light: #91DBE4;
+    --red: #F62642;
+    --gray1: #657786;
+    --gray2: #AAB8C2;
+    --gray3: #EBF0F3;
+    --white: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--gray3);
+    color: var(--navy);
+    min-height: 100vh;
+  }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    min-height: 100vh;
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .login-card {
+    background: var(--navy2);
+    border: 1px solid rgba(145,219,228,0.15);
+    border-radius: 16px;
+    padding: 48px 56px;
+    text-align: center;
+    max-width: 420px;
+    width: 90%;
+  }
+
+  .login-logo {
+    margin-bottom: 28px;
+  }
+
+  .login-logo .brand-name {
+    font-family: 'Comfortaa', cursive;
+    font-size: 32px;
+    color: var(--teal-light);
+    letter-spacing: -0.5px;
+  }
+
+  .login-logo .brand-sub {
+    font-size: 12px;
+    color: var(--gray2);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .login-title {
+    font-family: 'Comfortaa', cursive;
+    font-size: 20px;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .login-desc {
+    font-size: 13px;
+    color: var(--gray2);
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+
+  .btn-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 24px;
+    background: var(--teal);
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .btn-login:hover { background: #0a6070; }
+  .btn-login:active { transform: scale(0.98); }
+
+  .btn-login svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+  /* ── HEADER ── */
+  #app { display: none; }
+
+  header {
+    background: var(--navy);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .header-logo .brand-name {
+    font-family: 'Comfortaa', cursive;
+    font-size: 20px;
+    color: var(--teal-light);
+  }
+
+  .header-logo .brand-divider {
+    width: 1px;
+    height: 18px;
+    background: rgba(255,255,255,0.2);
+    margin: 0 4px;
+  }
+
+  .header-logo .brand-module {
+    font-size: 12px;
+    color: var(--gray2);
+    letter-spacing: 1px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .last-update {
+    font-size: 12px;
+    color: var(--gray2);
+  }
+
+  #btn-refresh {
+    background: rgba(145,219,228,0.1);
+    border: 1px solid rgba(145,219,228,0.25);
+    color: var(--teal-light);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s;
+  }
+  #btn-refresh:hover { background: rgba(145,219,228,0.2); }
+
+  .user-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 20px;
+    padding: 5px 12px 5px 5px;
+  }
+
+  .user-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--teal);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: var(--white);
+  }
+
+  .user-name { font-size: 12px; color: var(--gray2); }
+
+  #btn-logout {
+    background: none;
+    border: none;
+    color: var(--gray2);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: color 0.2s;
+  }
+  #btn-logout:hover { color: var(--red); }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 24px;
+  }
+
+  /* ── TABS ── */
+  .tabs-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid rgba(12,116,136,0.2);
+    padding-bottom: 0;
+  }
+
+  .tab-btn {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray1);
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .tab-btn:hover { color: var(--teal); }
+  .tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+  /* ── FILTROS ── */
+  .filters-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filters-row label {
+    font-size: 12px;
+    color: var(--gray1);
+    font-weight: 500;
+  }
+
+  .filters-row select {
+    background: var(--white);
+    border: 1px solid var(--gray2);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-family: 'Poppins', sans-serif;
+    color: var(--navy);
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .filters-row select:focus { border-color: var(--teal); }
+
+  /* ── METRIC CARDS ── */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .metric-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 18px 20px;
+    border-left: 3px solid var(--teal);
+    box-shadow: 0 1px 3px rgba(14,20,40,0.06);
+  }
+
+  .metric-card.red-accent { border-left-color: var(--red); }
+  .metric-card.teal-light-accent { border-left-color: var(--teal-light); }
+  .metric-card.navy-accent { border-left-color: var(--navy); }
+
+  .metric-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gray1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .metric-value {
+    font-family: 'Comfortaa', cursive;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1;
+  }
+
+  .metric-sub {
+    font-size: 11px;
+    color: var(--gray2);
+    margin-top: 4px;
+  }
+
+  /* ── CHARTS GRID ── */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .chart-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 20px 20px 16px;
+    box-shadow: 0 1px 3px rgba(14,20,40,0.06);
+  }
+
+  .chart-card.full { grid-column: 1 / -1; }
+
+  .chart-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+  }
+
+  .chart-wrap { position: relative; width: 100%; }
+
+  .chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--gray1);
+  }
+
+  .legend-dot {
+    width: 9px; height: 9px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── LOADING / ERROR ── */
+  #loading-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(14,20,40,0.55);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid rgba(145,219,228,0.2);
+    border-top-color: var(--teal-light);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text { color: var(--teal-light); font-size: 14px; }
+
+  .error-banner {
+    display: none;
+    background: #fff0f2;
+    border: 1px solid #fcc;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #a32d2d;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 640px) {
+    .charts-grid { grid-template-columns: 1fr; }
+    header { padding: 0 16px; }
+    main { padding: 16px; }
+    .login-card { padding: 32px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="brand-name">lucralize</div>
+      <div class="brand-sub">dashboard de clientes</div>
+    </div>
+    <div class="login-title">Acesso com Microsoft 365</div>
+    <div class="login-desc">
+      Entre com sua conta corporativa para visualizar os indicadores das listas do SharePoint em tempo real.
+    </div>
+    <button class="btn-login" onclick="signIn()">
+      <svg viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+        <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+        <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+        <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+      </svg>
+      Entrar com conta Microsoft
+    </button>
+  </div>
+  <div style="font-size:11px; color: #657786; text-align:center; max-width:340px;">
+    Seus dados são lidos diretamente do SharePoint da Lucralize. Nenhuma informação é armazenada externamente.
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="header-logo">
+      <span class="brand-name">lucralize</span>
+      <span class="brand-divider"></span>
+      <span class="brand-module">clientes</span>
+    </div>
+    <div class="header-right">
+      <span class="last-update" id="last-update-text"></span>
+      <button id="btn-refresh" onclick="loadAllData()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Atualizar
+      </button>
+      <div class="user-pill">
+        <div class="user-avatar" id="user-initials">?</div>
+        <span class="user-name" id="user-name-text">–</span>
+      </div>
+      <button id="btn-logout" onclick="signOut()">Sair</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="error-banner" class="error-banner"></div>
+
+    <div class="tabs-bar">
+      <button class="tab-btn active" onclick="switchTab('contab')">Contabilidade</button>
+      <button class="tab-btn" onclick="switchTab('tech')">Lucralize Tech</button>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filters-row">
+      <label>Filtrar por:</label>
+      <select id="filter-situacao" onchange="applyFilters()">
+        <option value="">Todas as situações</option>
+        <option value="ATIVO">Ativo</option>
+        <option value="INATIVO">Inativo</option>
+        <option value="BAIXADA">Baixada</option>
+        <option value="SUSPENSO">Suspenso</option>
+      </select>
+      <select id="filter-regime" onchange="applyFilters()">
+        <option value="">Todos os regimes</option>
+        <option value="Simples Nacional">Simples Nacional</option>
+        <option value="Lucro Presumido">Lucro Presumido</option>
+        <option value="Lucro Real Anual">Lucro Real Anual</option>
+        <option value="MEI">MEI</option>
+      </select>
+    </div>
+
+    <!-- TAB CONTABILIDADE -->
+    <div id="tab-contab">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Total de clientes</div>
+          <div class="metric-value" id="c-total">–</div>
+          <div class="metric-sub">na base filtrada</div>
+        </div>
+        <div class="metric-card red-accent">
+          <div class="metric-label">Clientes ativos</div>
+          <div class="metric-value" id="c-ativos">–</div>
+          <div class="metric-sub" id="c-ativos-pct">–</div>
+        </div>
+        <div class="metric-card teal-light-accent">
+          <div class="metric-label">Honorários / mês</div>
+          <div class="metric-value" id="c-honorarios">–</div>
+          <div class="metric-sub">clientes ativos</div>
+        </div>
+        <div class="metric-card navy-accent">
+          <div class="metric-label">Ticket médio</div>
+          <div class="metric-value" id="c-ticket">–</div>
+          <div class="metric-sub">por cliente ativo</div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Situação dos clientes</div>
+          <div class="chart-wrap" style="height:200px"><canvas id="c-chart-situacao" role="img" aria-label="Situação dos clientes Contabilidade"></canvas></div>
+          <div class="chart-legend" id="c-legend-situacao"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Regime tributário</div>
+          <div class="chart-wrap" style="height:200px"><canvas id="c-chart-regime" role="img" aria-label="Regime tributário Contabilidade"></canvas></div>
+          <div class="chart-legend" id="c-legend-regime"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Classificação</div>
+          <div class="chart-wrap" style="height:160px"><canvas id="c-chart-class" role="img" aria-label="Classificação dos clientes"></canvas></div>
+          <div class="chart-legend" id="c-legend-class"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Núcleo</div>
+          <div class="chart-wrap" style="height:160px"><canvas id="c-chart-nucleo" role="img" aria-label="Distribuição por núcleo"></canvas></div>
+          <div class="chart-legend" id="c-legend-nucleo"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB TECH -->
+    <div id="tab-tech" style="display:none">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Total de clientes</div>
+          <div class="metric-value" id="t-total">–</div>
+          <div class="metric-sub">na base filtrada</div>
+        </div>
+        <div class="metric-card red-accent">
+          <div class="metric-label">Clientes ativos</div>
+          <div class="metric-value" id="t-ativos">–</div>
+          <div class="metric-sub" id="t-ativos-pct">–</div>
+        </div>
+        <div class="metric-card teal-light-accent">
+          <div class="metric-label">Receita / mês</div>
+          <div class="metric-value" id="t-receita">–</div>
+          <div class="metric-sub">clientes ativos</div>
+        </div>
+        <div class="metric-card navy-accent">
+          <div class="metric-label">Ticket médio</div>
+          <div class="metric-value" id="t-ticket">–</div>
+          <div class="metric-sub">por cliente ativo</div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Situação dos clientes</div>
+          <div class="chart-wrap" style="height:200px"><canvas id="t-chart-situacao" role="img" aria-label="Situação dos clientes Tech"></canvas></div>
+          <div class="chart-legend" id="t-legend-situacao"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Plano</div>
+          <div class="chart-wrap" style="height:200px"><canvas id="t-chart-plano" role="img" aria-label="Planos Tech"></canvas></div>
+          <div class="chart-legend" id="t-legend-plano"></div>
+        </div>
+        <div class="chart-card full">
+          <div class="chart-title">Regime tributário</div>
+          <div class="chart-wrap" style="height:160px"><canvas id="t-chart-regime" role="img" aria-label="Regime tributário Tech"></canvas></div>
+          <div class="chart-legend" id="t-legend-regime"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- LOADING -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Carregando dados do SharePoint…</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CONFIGURAÇÃO — preencha antes de usar
+// ═══════════════════════════════════════════════════════
+const CONFIG = {
+  clientId:     'c0868f3b-764c-4c5b-a9fc-4af4b6eb0baf',       // App Registration → Application (client) ID
+  tenantId:     '5173aa83-66e1-49f3-9128-f2251b43294d',       // Azure AD → Tenant ID
+  redirectUri:  window.location.href.split('#')[0],
+
+  // URLs das listas SharePoint (cole os caminhos exatos)
+  contabilidade: {
+    siteUrl:  'lucralize.sharepoint.com',
+    listName: 'Controle de Clientes',         // nome exato da lista
+  },
+  tech: {
+    siteUrl:  'lucralize.sharepoint.com,sites/LUCRALIZETECH',
+    listName: 'Base de Usurios',              // nome exato da lista
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+// MSAL — autenticação Microsoft
+// ═══════════════════════════════════════════════════════
+const AUTHORITY = `https://login.microsoftonline.com/${CONFIG.tenantId}`;
+const SCOPES = ['https://graph.microsoft.com/Sites.Read.All', 'https://graph.microsoft.com/User.Read'];
+
+let accessToken = null;
+let userData    = {};
+let rawContab   = [];
+let rawTech     = [];
+let currentTab  = 'contab';
+let charts      = {};
+
+// Simples PKCE OAuth via redirect
+function signIn() {
+  const verifier  = generateVerifier();
+  const challenge = generateChallenge(verifier);
+  const state     = btoa(Math.random().toString());
+  sessionStorage.setItem('pkce_verifier', verifier);
+  sessionStorage.setItem('oauth_state', state);
+
+  challenge.then(ch => {
+    const params = new URLSearchParams({
+      client_id:             CONFIG.clientId,
+      response_type:         'code',
+      redirect_uri:          CONFIG.redirectUri,
+      response_mode:         'fragment',
+      scope:                 SCOPES.join(' '),
+      state,
+      code_challenge:        ch,
+      code_challenge_method: 'S256',
+    });
+    window.location.href = `${AUTHORITY}/oauth2/v2.0/authorize?${params}`;
+  });
+}
+
+function signOut() {
+  accessToken = null;
+  sessionStorage.clear();
+  window.location.href = `${AUTHORITY}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(CONFIG.redirectUri)}`;
+}
+
+async function generateVerifier() {
+  const arr = new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  return btoa(String.fromCharCode(...arr)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+
+function generateVerifier() {
+  const arr = new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  return btoa(String.fromCharCode(...arr)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+
+async function generateChallenge(verifier) {
+  const encoder = new TextEncoder();
+  const data    = encoder.encode(verifier);
+  const digest  = await crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+
+async function exchangeCode(code) {
+  const verifier = sessionStorage.getItem('pkce_verifier');
+  const body = new URLSearchParams({
+    client_id:     CONFIG.clientId,
+    grant_type:    'authorization_code',
+    code,
+    redirect_uri:  CONFIG.redirectUri,
+    code_verifier: verifier,
+  });
+  const res  = await fetch(`${AUTHORITY}/oauth2/v2.0/token`, { method:'POST', body, headers:{'Content-Type':'application/x-www-form-urlencoded'} });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error_description);
+  return data.access_token;
+}
+
+// ═══════════════════════════════════════════════════════
+// GRAPH API — busca dados do SharePoint
+// ═══════════════════════════════════════════════════════
+async function graphGet(url) {
+  const res = await fetch(`https://graph.microsoft.com/v1.0${url}`, {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
+  if (!res.ok) throw new Error(`Graph API error: ${res.status} ${url}`);
+  return res.json();
+}
+
+async function getSiteId(siteUrl) {
+  const data = await graphGet(`/sites/${siteUrl}`);
+  return data.id;
+}
+
+async function getListItems(siteId, listName) {
+  let items = [];
+  let url   = `/sites/${siteId}/lists/${encodeURIComponent(listName)}/items?expand=fields&$top=999`;
+  while (url) {
+    const data = await graphGet(url);
+    items = items.concat(data.value || []);
+    url = data['@odata.nextLink'] ? data['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0','') : null;
+  }
+  return items.map(i => i.fields || {});
+}
+
+async function loadAllData() {
+  showLoading(true);
+  hideError();
+  try {
+    // usuário
+    const me = await graphGet('/me');
+    userData = me;
+    setUserUI(me);
+
+    // contabilidade
+    const siteIdC = await getSiteId(CONFIG.contabilidade.siteUrl);
+    rawContab     = await getListItems(siteIdC, CONFIG.contabilidade.listName);
+
+    // tech
+    const siteIdT = await getSiteId(CONFIG.tech.siteUrl);
+    rawTech       = await getListItems(siteIdT, CONFIG.tech.listName);
+
+    document.getElementById('last-update-text').textContent =
+      'Atualizado às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+
+    applyFilters();
+  } catch(e) {
+    showError('Erro ao carregar dados: ' + e.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// FILTROS & INDICADORES
+// ═══════════════════════════════════════════════════════
+function applyFilters() {
+  const sit    = document.getElementById('filter-situacao').value.toUpperCase();
+  const regime = document.getElementById('filter-regime').value;
+
+  let fc = rawContab;
+  let ft = rawTech;
+
+  if (sit) {
+    fc = fc.filter(r => (r.Situa_x00e7__x00e3_o || r['Situa\u00e7\u00e3o'] || r.Situacao || '').toUpperCase() === sit);
+    ft = ft.filter(r => (r.Situa_x00e7__x00e3_o || r['Situa\u00e7\u00e3o'] || r.Situacao || '').toUpperCase() === sit);
+  }
+  if (regime) {
+    fc = fc.filter(r => (r.Regime_x0020_Tribut_x00e1_rio_x00 || r['RegimeTribut\u00e1rioAnoAtual'] || r.RegimeTributarioAnoAtual || '').includes(regime));
+    ft = ft.filter(r => (r.Regime_x0020_Tribut_x00e1_rio_x00 || r['RegimeTribut\u00e1rioAnoAtual'] || r.RegimeTributarioAnoAtual || '').includes(regime));
+  }
+
+  renderContab(fc);
+  renderTech(ft);
+}
+
+function fieldVal(row, ...candidates) {
+  for (const k of candidates) {
+    if (row[k] !== undefined && row[k] !== null && row[k] !== '') return row[k];
+  }
+  return '';
+}
+
+function renderContab(data) {
+  const getSit = r => (fieldVal(r, 'Situa_x00e7__x00e3_o','Situacao','Situação') || '').toUpperCase();
+  const ativos = data.filter(r => getSit(r) === 'ATIVO');
+  const total  = data.length;
+  const hon    = ativos.reduce((s,r) => s + (parseFloat(fieldVal(r,'Honor_x00e1_rio','Honorário','Honorario')) || 0), 0);
+  const ticket = ativos.length ? Math.round(hon / ativos.length) : 0;
+
+  setText('c-total',      total);
+  setText('c-ativos',     ativos.length);
+  setText('c-ativos-pct', total ? Math.round(ativos.length/total*100) + '% do total' : '–');
+  setText('c-honorarios', 'R$ ' + Math.round(hon/1000) + 'k');
+  setText('c-ticket',     'R$ ' + ticket.toLocaleString('pt-BR'));
+
+  const countBy = (arr, fn) => {
+    const m = {};
+    arr.forEach(r => { const k = fn(r)||'Outros'; m[k] = (m[k]||0)+1; });
+    return m;
+  };
+
+  const bySit    = countBy(data,   r => capFirst(getSit(r)));
+  const byRegime = countBy(data,   r => fieldVal(r,'Regime_x0020_Tribut_x00e1_rio_x0020_Ano_x0020_Atual_x003','RegimeTributarioAnoAtual','Regime Tributário Ano Atual') || 'N/D');
+  const byClass  = countBy(data,   r => fieldVal(r,'Classifica_x00e7__x00e3_o','Classificação','Classificacao') || 'N/D');
+  const byNucleo = countBy(data,   r => fieldVal(r,'N_x00fa_cleo','Núcleo','Nucleo') || 'N/D');
+
+  makeChart('c-chart-situacao', 'doughnut', bySit,    'c-legend-situacao');
+  makeChart('c-chart-regime',   'doughnut', byRegime, 'c-legend-regime');
+  makeChart('c-chart-class',    'bar',      byClass,  'c-legend-class');
+  makeChart('c-chart-nucleo',   'doughnut', byNucleo, 'c-legend-nucleo');
+}
+
+function renderTech(data) {
+  const getSit = r => (fieldVal(r,'Situa_x00e7__x00e3_o','Situacao','Situação') || '').toUpperCase();
+  const ativos = data.filter(r => ['ATIVO','ATIVA'].includes(getSit(r)));
+  const total  = data.length;
+  const rec    = ativos.reduce((s,r) => s + (parseFloat(fieldVal(r,'Valor')) || 0), 0);
+  const ticket = ativos.length ? Math.round(rec / ativos.length) : 0;
+
+  setText('t-total',      total);
+  setText('t-ativos',     ativos.length);
+  setText('t-ativos-pct', total ? Math.round(ativos.length/total*100) + '% do total' : '–');
+  setText('t-receita',    'R$ ' + Math.round(rec/1000) + 'k');
+  setText('t-ticket',     'R$ ' + ticket.toLocaleString('pt-BR'));
+
+  const countBy = (arr, fn) => {
+    const m = {};
+    arr.forEach(r => { const k = fn(r)||'Outros'; m[k] = (m[k]||0)+1; });
+    return m;
+  };
+
+  const bySit    = countBy(data, r => capFirst(getSit(r)));
+  const byPlano  = countBy(data, r => fieldVal(r,'Plano') || 'N/D');
+  const byRegime = countBy(data, r => fieldVal(r,'Regime_x0020_Tribut_x00e1_rio_x0020_Ano_x0020_Atual_x003','RegimeTributarioAnoAtual') || 'N/D');
+
+  makeChart('t-chart-situacao', 'doughnut', bySit,   't-legend-situacao');
+  makeChart('t-chart-plano',    'bar',      byPlano, 't-legend-plano');
+  makeChart('t-chart-regime',   'doughnut', byRegime,'t-legend-regime');
+}
+
+// ═══════════════════════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════════════════════
+const PALETTE = ['#0C7488','#F62642','#91DBE4','#0E1428','#657786','#AAB8C2','#F4A800'];
+
+function makeChart(canvasId, type, countMap, legendId) {
+  const entries = Object.entries(countMap).sort((a,b) => b[1]-a[1]).slice(0,7);
+  const labels  = entries.map(e => e[0]);
+  const data    = entries.map(e => e[1]);
+  const colors  = labels.map((_,i) => PALETTE[i % PALETTE.length]);
+
+  if (charts[canvasId]) charts[canvasId].destroy();
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+
+  charts[canvasId] = new Chart(ctx, {
+    type,
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0, borderRadius: type === 'bar' ? 5 : 0 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => ` ${c.label}: ${c.raw}` } }
+      },
+      scales: type === 'bar' ? {
+        x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#657786' } },
+        y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 11 }, color: '#657786' } }
+      } : {}
+    }
+  });
+
+  const leg = document.getElementById(legendId);
+  if (leg) {
+    const total = data.reduce((a,b) => a+b, 0);
+    leg.innerHTML = labels.map((l,i) =>
+      `<span class="legend-item"><span class="legend-dot" style="background:${colors[i]}"></span>${l} <strong>${total ? Math.round(data[i]/total*100) : 0}%</strong></span>`
+    ).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// UI helpers
+// ═══════════════════════════════════════════════════════
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-contab').style.display = tab === 'contab' ? '' : 'none';
+  document.getElementById('tab-tech').style.display   = tab === 'tech'   ? '' : 'none';
+  document.querySelectorAll('.tab-btn').forEach((b,i) =>
+    b.classList.toggle('active', (i===0&&tab==='contab')||(i===1&&tab==='tech'))
+  );
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function capFirst(s) {
+  if (!s) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
+
+function setUserUI(me) {
+  const name   = me.displayName || me.mail || 'Usuário';
+  const parts  = name.split(' ');
+  const initials = (parts[0][0] + (parts[1]?.[0]||'')).toUpperCase();
+  setText('user-name-text', parts[0]);
+  document.getElementById('user-initials').textContent = initials;
+}
+
+function showLoading(v) {
+  document.getElementById('loading-overlay').style.display = v ? 'flex' : 'none';
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-banner');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideError() {
+  document.getElementById('error-banner').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════════
+// BOOT — verifica se voltou do OAuth com code
+// ═══════════════════════════════════════════════════════
+async function boot() {
+  const hash   = window.location.hash.substring(1);
+  const params = new URLSearchParams(hash);
+  const code   = params.get('code');
+  const error  = params.get('error');
+
+  if (error) {
+    showLoginError('Erro no login: ' + params.get('error_description'));
+    return;
+  }
+
+  if (code) {
+    history.replaceState(null, '', window.location.pathname);
+    try {
+      accessToken = await exchangeCode(code);
+      sessionStorage.setItem('access_token', accessToken);
+      showApp();
+      await loadAllData();
+    } catch(e) {
+      showLoginError('Falha na autenticação: ' + e.message);
+    }
+    return;
+  }
+
+  // token em sessão
+  const stored = sessionStorage.getItem('access_token');
+  if (stored) {
+    accessToken = stored;
+    showApp();
+    await loadAllData();
+  }
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+function showLoginError(msg) {
+  const el = document.createElement('div');
+  el.style.cssText = 'color:#f62642;font-size:13px;margin-top:12px;text-align:center;';
+  el.textContent = msg;
+  document.querySelector('.login-card').appendChild(el);
+}
+
+boot();
+</script>
+</body>
+</html>
