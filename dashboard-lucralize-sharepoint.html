@@ -1115,7 +1115,7 @@ function renderTech(ft,de,ate){
   mkDoughnut('c-tech-plano',countBy(ft,r=>getPlano(r)),'leg-tech-plano');
   mkDoughnut('c-tech-regime',countBy(ft,r=>getRegime(r)),'leg-tech-regime');
   mkDoughnut('c-tech-tipo',countBy(rawTech,r=>fv(r,'TipodeEntrada','Tipo_x0020_de_x0020_Entrada','Tipo de Entrada')),'leg-tech-tipo');
-  mkHBar('c-tech-motivo',topN(countBy(rawTech,r=>fv(r,'Motivo_x0020_da_x0020_Sa_x00ed_da','Motivo da Saída','MotivoDaSaída')),8),'#F62642');
+  const _saidasT=rawTech.filter(r=>{const s=getSaidaYM_tech(r);return s&&(!de||s>=de)&&s<=(ate&&ate!=='9999-12'?ate:lastPeriodT);});  mkHBar('c-tech-motivo',topN(countBy(_saidasT,r=>fv(r,'Motivo_x0020_da_x0020_Sa_x00ed_da','Motivo da Saída','MotivoDaSaída','MotivodaSa_x00ed_da')),8),'#F62642');
   mkDoughnut('c-tech-resp',countBy(ft,r=>fv(r,'Respons_x00e1_vel_x0028_Escolha_x0029_','Respons_x00e1_vel_x0028_Escolha_','Respons_x00e1_vel','Responsável')),'leg-tech-resp');
   mkHBar('c-tech-origem',topN(countBy(rawTech,r=>fv(r,'Origem')),10),'#0C7488');
   renderGeo('tech',ft);
@@ -1184,7 +1184,7 @@ function renderContab(fc,de,ate){
   mkDoughnut('c-cont-class',countBy(fc,r=>fv(r,'Classifica_x00e7__x00e3_o','Classificação','Classificacao')),'leg-cont-class');
   mkDoughnut('c-cont-regime',countBy(fc,r=>getRegime(r)),'leg-cont-regime');
   mkDoughnut('c-cont-tipo',countBy(rawContab,r=>fv(r,'Tipo_x0020_de_x0020_entrada','Tipo de entrada','TipoDeEntrada')),'leg-cont-tipo');
-  mkHBar('c-cont-motivo',topN(countBy(rawContab,r=>fv(r,'Motivo_x0020_da_x0020_Sa_x00ed_da','Motivo da Saída','MotivoDaSaída')),8),'#F62642');
+  const _saidasC=rawContab.filter(r=>{const s=getSaidaYM_contab(r);return s&&(!de||s>=de)&&s<=(ate&&ate!=='9999-12'?ate:lastPeriodC);});  mkHBar('c-cont-motivo',topN(countBy(_saidasC,r=>fv(r,'Motivo_x0020_da_x0020_Sa_x00ed_da','Motivo da Saída','MotivoDaSaída')),8),'#F62642');
   mkHBar('c-cont-resp',topN(countBy(fc,r=>fv(r,'Respons_x00e1_vel_x0020_Cont_x00e1_bil','Responsável Contábil','ResponsávelContábil')),8),'#91DBE4');
   mkDoughnut('c-cont-nucleo',countBy(fc,r=>fv(r,'N_x00fa_cleo','Núcleo','Nucleo')),'leg-cont-nucleo');
   mkDoughnut('c-cont-carteira',countBy(fc,r=>fv(r,'CarteiraGS_x0020_Escolha_x0029_','CarteiraGS_x0020_Escolha_x0029','Carteira GS')),'leg-cont-carteira');
