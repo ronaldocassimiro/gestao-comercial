@@ -827,18 +827,32 @@ function renderGeral(fc,ft,de,ate){
   ]);
 
   // Evolução
-  const cumC=buildCumulative(flowC.entradas,flowC.saidas);
-  const cumT=buildCumulative(flowT.entradas,flowT.saidas);
+  // Evolução usando ALL_PERIODS completo (independente do filtro de data)
+  const flowCAll=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,ALL_PERIODS);
+  const flowTAll=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,ALL_PERIODS);
+  const cumC=buildCumulative(flowCAll.entradas,flowCAll.saidas);
+  const cumT=buildCumulative(flowTAll.entradas,flowTAll.saidas);
   const cumTotal=cumC.map((v,i)=>v+cumT[i]);
+  // Filtrar pelo período selecionado
+  const evoFp=window._filtPeriods||ALL_PERIODS;
+  const evoStart=ALL_PERIODS.indexOf(evoFp[0]);
+  const evoEnd=ALL_PERIODS.indexOf(evoFp[evoFp.length-1]);
+  const evoS=evoStart<0?0:evoStart;
+  const evoE=evoEnd<0?ALL_PERIODS.length-1:evoEnd;
+  const evoLabels=ALL_LABELS.slice(evoS,evoE+1);
+  const evoCumC=cumC.slice(evoS,evoE+1);
+  const evoCumT=cumT.slice(evoS,evoE+1);
+  const evoCumTotal=cumTotal.slice(evoS,evoE+1);
   // Meta 2026 acumulada
   const metaAcum=[489];
   const metaE=[40,30,18,39,24,32,61,50,47,32,35,66];
   for(let i=0;i<11;i++) metaAcum.push(metaAcum[i]+metaE[i]-META_S_MENSAL[i]);
-  const labelsComMeta=[...ALL_LABELS,'Jan/26','Fev/26','Mar/26','Abr/26','Mai/26','Jun/26','Jul/26','Ago/26','Set/26','Out/26','Nov/26','Dez/26'];
-  const cumTotalComMeta=[...cumTotal,...Array(12).fill(null)];
-  const cumCComMeta=[...cumC,...Array(12).fill(null)];
-  const cumTComMeta=[...cumT,...Array(12).fill(null)];
-  const metaLine=[...Array(ALL_PERIODS.length).fill(null),...metaAcum];
+  const meta2026Labels=['Jan/26','Fev/26','Mar/26','Abr/26','Mai/26','Jun/26','Jul/26','Ago/26','Set/26','Out/26','Nov/26','Dez/26'];
+  const labelsComMeta=[...evoLabels,...meta2026Labels];
+  const cumTotalComMeta=[...evoCumTotal,...Array(12).fill(null)];
+  const cumCComMeta=[...evoCumC,...Array(12).fill(null)];
+  const cumTComMeta=[...evoCumT,...Array(12).fill(null)];
+  const metaLine=[...Array(evoLabels.length).fill(null),...metaAcum];
 
   mkLineMulti('c-geral-evolucao',labelsComMeta,[
     {label:'Tech',data:cumTComMeta,color:'#0C7488',dash:false},
