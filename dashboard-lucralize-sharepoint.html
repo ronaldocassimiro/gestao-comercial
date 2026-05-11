@@ -195,6 +195,15 @@ main{max-width:1400px;margin:0 auto;padding:18px}
       <option value="MEI">MEI</option>
     </select>
     <button class="btn-clear" onclick="clearFilters()">✕ Limpar filtros</button>
+    <span style="width:1px;height:20px;background:var(--g2);margin:0 4px"></span>
+    <label>Período:</label>
+    <select id="f-de" onchange="applyFilters()" style="min-width:100px">
+      <option value="">De</option>
+    </select>
+    <select id="f-ate" onchange="applyFilters()" style="min-width:100px">
+      <option value="">Até</option>
+    </select>
+    <button class="btn-clear" onclick="clearDateFilter()">✕ Limpar período</button>
   </div>
 
   <main>
@@ -249,6 +258,16 @@ main{max-width:1400px;margin:0 auto;padding:18px}
         <div class="card"><div class="ct">Origem dos Clientes — Top 8</div><div class="cw" style="height:170px"><canvas id="c-geral-origem" role="img" aria-label="Origem">Origens.</canvas></div></div>
       </div>
 
+      <div class="sec-title">📉 MRR — Receita Recorrente Mensal</div>
+      <div class="card full">
+        <div class="ct">MRR Histórico — Evolução da Receita Recorrente <span class="ct-badge badge-teal">Contabilidade + Tech</span></div>
+        <div class="cw" style="height:240px"><canvas id="c-mrr-hist-geral" role="img" aria-label="MRR histórico consolidado">MRR mensal.</canvas></div>
+        <div class="leg">
+          <span><span class="ld" style="background:#0C7488"></span>Contabilidade</span>
+          <span><span class="ld" style="background:#91DBE4"></span>Lucralize Tech</span>
+          <span><span class="ld" style="background:#0E1428"></span>Total</span>
+        </div>
+      </div>
       <div class="sec-title">🗺️ Distribuição Geográfica</div>
       <div class="g2">
         <div class="card"><div class="ct">Clientes por Região</div><div class="cw" style="height:190px"><canvas id="c-geral-regiao" role="img" aria-label="Regiões">Regiões.</canvas></div><div class="leg" id="leg-geral-regiao"></div></div>
@@ -290,6 +309,12 @@ main{max-width:1400px;margin:0 auto;padding:18px}
       </div>
       <div class="sec-title">📣 Origem</div>
       <div class="card full"><div class="ct">Canal de Aquisição — Top 10</div><div class="cw" style="height:220px"><canvas id="c-tech-origem" role="img" aria-label="Origem Tech">Origens.</canvas></div></div>
+      <div class="sec-title">📉 MRR — Receita Recorrente Mensal</div>
+      <div class="card full">
+        <div class="ct">MRR Histórico — Lucralize Tech</div>
+        <div class="cw" style="height:220px"><canvas id="c-mrr-hist-tech" role="img" aria-label="MRR histórico Tech">MRR Tech.</canvas></div>
+        <div class="leg"><span><span class="ld" style="background:#0C7488"></span>MRR Tech</span></div>
+      </div>
       <div class="sec-title">🗺️ Distribuição Geográfica</div>
       <div class="g2">
         <div class="card"><div class="ct">Por Região</div><div class="cw" style="height:190px"><canvas id="c-tech-regiao" role="img" aria-label="Região Tech">Regiões.</canvas></div><div class="leg" id="leg-tech-regiao"></div></div>
@@ -335,6 +360,12 @@ main{max-width:1400px;margin:0 auto;padding:18px}
       </div>
       <div class="sec-title">📣 Origem</div>
       <div class="card full"><div class="ct">Canal de Aquisição — Top 10</div><div class="cw" style="height:220px"><canvas id="c-cont-origem" role="img" aria-label="Origem Contab">Origens.</canvas></div></div>
+      <div class="sec-title">📉 MRR — Receita Recorrente Mensal</div>
+      <div class="card full">
+        <div class="ct">MRR Histórico — Contabilidade</div>
+        <div class="cw" style="height:220px"><canvas id="c-mrr-hist-cont" role="img" aria-label="MRR histórico Contabilidade">MRR Contabilidade.</canvas></div>
+        <div class="leg"><span><span class="ld" style="background:#F62642"></span>MRR Contabilidade</span></div>
+      </div>
       <div class="sec-title">🗺️ Distribuição Geográfica</div>
       <div class="g2">
         <div class="card"><div class="ct">Por Região</div><div class="cw" style="height:190px"><canvas id="c-cont-regiao" role="img" aria-label="Região Contab">Regiões.</canvas></div><div class="leg" id="leg-cont-regiao"></div></div>
@@ -433,7 +464,7 @@ const SAZ_MEDIA=MESES_LABEL.map((_,i)=>Math.round(((SAZ['2023'][i]+SAZ['2024'][i
 let saz2026=[...SAZ_MEDIA];
 
 // Metas mensais saídas
-const META_S_MENSAL=[15,11,12,8,10,11,5,17,9,28,5,33];
+const META_S_MENSAL=[19,14,16,10,13,14,6,22,12,36,6,43];
 
 // Histórico anual
 const HIST={
@@ -460,7 +491,7 @@ async function exchangeCode(code){const body=new URLSearchParams({client_id:CONF
 async function graphGet(url){const r=await fetch(`https://graph.microsoft.com/v1.0${url}`,{headers:{Authorization:`Bearer ${accessToken}`}});if(!r.ok)throw new Error(`Graph API error: ${r.status} ${url}`);return r.json();}
 async function getSiteId(siteUrl){return(await graphGet(`/sites/${siteUrl}`)).id;}
 async function getListItems(siteId,listName){let items=[],url=`/sites/${siteId}/lists/${encodeURIComponent(listName)}/items?expand=fields&$top=999`;while(url){const d=await graphGet(url);items=items.concat(d.value||[]);url=d['@odata.nextLink']?d['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0',''):null;}return items.map(i=>i.fields||{});}
-async function loadAll(){showLoading(true);hideErr();try{const me=await graphGet('/me');setUserUI(me);const sIdC=await getSiteId(CONFIG.contabilidade.siteUrl);rawContab=await getListItems(sIdC,CONFIG.contabilidade.listName);const sIdT=await getSiteId(CONFIG.tech.siteUrl);rawTech=await getListItems(sIdT,CONFIG.tech.listName);document.getElementById('last-upd').textContent='Atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});applyFilters();}catch(e){showErr('Erro ao carregar dados: '+e.message);}finally{showLoading(false);}}
+async function loadAll(){initDateFilter();showLoading(true);hideErr();try{const me=await graphGet('/me');setUserUI(me);const sIdC=await getSiteId(CONFIG.contabilidade.siteUrl);rawContab=await getListItems(sIdC,CONFIG.contabilidade.listName);const sIdT=await getSiteId(CONFIG.tech.siteUrl);rawTech=await getListItems(sIdT,CONFIG.tech.listName);document.getElementById('last-upd').textContent='Atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});applyFilters();}catch(e){showErr('Erro ao carregar dados: '+e.message);}finally{showLoading(false);}}
 
 // FIELD HELPERS
 function fv(r,...keys){for(const k of keys)if(r[k]!==undefined&&r[k]!==null&&r[k]!=='')return String(r[k]);return'';}
@@ -494,7 +525,7 @@ const META_E_CONTAB_M = [8,6,3,8,5,6,12,10,9,6,7,13];
 const META_E_TECH_M   = [32,24,14,32,19,26,49,40,38,26,28,53];
 const META_S_CONTAB_M = [4,3,3,2,3,3,1,4,2,7,1,8];
 const META_S_TECH_M   = [11,8,9,6,7,8,4,13,7,21,4,25];
-const META_ACUM_TOTAL  = [507,526,532,563,577,598,654,687,725,729,759,792];
+const META_ACUM_TOTAL  = [510,526,528,557,568,586,641,669,704,700,729,752];
 const META_ACUM_CONTAB = [231,236,238,245,249,254,264,272,280,285,291,302];
 const META_ACUM_TECH   = [281,298,308,331,344,363,398,426,453,472,492,530];
 const MRR_META_C_M = [17220,12915,7585,17015,10455,13940,26240,21525,20295,13940,14965,28495];
@@ -541,20 +572,27 @@ function renderMVRMensal(prefix, metaE, realE, metaAcum, ativosInicio, saidasRea
   const gapA = acumReal.map((v,i) => v !== null ? v - metaAcum[i] : null);
 
   el.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px">
       <div class="card">
         <div class="ct">Entradas — Meta vs Realizado <span class="ct-badge badge-teal">Mês a mês</span></div>
-        <div class="cw" style="height:200px"><canvas id="c-mvr-e-${prefix}" role="img" aria-label="Entradas meta vs realizado">Entradas.</canvas></div>
+        <div class="cw" style="height:190px"><canvas id="c-mvr-e-${prefix}" role="img" aria-label="Entradas meta vs realizado">Entradas.</canvas></div>
         <div class="leg"><span><span class="ld" style="background:rgba(14,20,40,0.2)"></span>Meta</span><span><span class="ld" style="background:#0C7488"></span>Realizado</span></div>
       </div>
       <div class="card">
+        <div class="ct">Saídas — Meta vs Realizado <span class="ct-badge badge-red">Mês a mês · Meta = controle de churn</span></div>
+        <div class="cw" style="height:190px"><canvas id="c-mvr-s-${prefix}" role="img" aria-label="Saídas meta vs realizado">Saídas.</canvas></div>
+        <div class="leg"><span><span class="ld" style="background:rgba(246,38,66,0.2)"></span>Meta máxima</span><span><span class="ld" style="background:#F62642"></span>Realizado</span><span style="font-size:10px;color:var(--g1)">(abaixo da meta = bom ✓)</span></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="card">
         <div class="ct">Clientes Ativos — Meta vs Realizado <span class="ct-badge badge-teal">Acumulado</span></div>
-        <div class="cw" style="height:200px"><canvas id="c-mvr-a-${prefix}" role="img" aria-label="Ativos meta vs realizado">Ativos.</canvas></div>
+        <div class="cw" style="height:190px"><canvas id="c-mvr-a-${prefix}" role="img" aria-label="Ativos meta vs realizado">Ativos.</canvas></div>
         <div class="leg"><span><span class="ld" style="background:#BA7517"></span>Meta</span><span><span class="ld" style="background:#0C7488"></span>Realizado</span></div>
       </div>
       <div class="card">
-        <div class="ct">Gap Acumulado <span class="ct-badge ${(gapE[nReal-1]||0)>=0?'badge-green':'badge-red'}">${(gapE[nReal-1]||0)>=0?'Acima da meta':'Abaixo da meta'}</span></div>
-        <div class="cw" style="height:200px"><canvas id="c-mvr-g-${prefix}" role="img" aria-label="Gap acumulado">Gap.</canvas></div>
+        <div class="ct">Gap Acumulado <span class="ct-badge ${(gapE[nReal-1]||0)>=0?'badge-green':'badge-red'}">${(gapE[nReal-1]||0)>=0?'Entradas acima da meta':'Entradas abaixo da meta'}</span></div>
+        <div class="cw" style="height:190px"><canvas id="c-mvr-g-${prefix}" role="img" aria-label="Gap acumulado">Gap.</canvas></div>
         <div class="leg"><span><span class="ld" style="background:#0C7488"></span>Gap entradas</span><span><span class="ld" style="background:#F62642"></span>Gap ativos</span></div>
       </div>
     </div>
@@ -589,6 +627,20 @@ function renderMVRMensal(prefix, metaE, realE, metaAcum, ativosInicio, saidasRea
       scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#888',autoSkip:false}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10},color:'#888'}}}}});
   }
 
+  // Chart: saídas meta vs realizado
+  destroyChart(`c-mvr-s-${prefix}`);
+  const ctxS = document.getElementById(`c-mvr-s-${prefix}`);
+  if(ctxS) {
+    const dlS={id:'dls',afterDatasetsDraw(chart){const ctx=chart.ctx;chart.data.datasets.forEach((ds,di)=>{if(di===0)return;const meta=chart.getDatasetMeta(di);meta.data.forEach((bar,i)=>{const val=ds.data[i];if(!val&&val!==0)return;ctx.save();ctx.font='9px Poppins,sans-serif';ctx.fillStyle='#F62642';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(val,bar.x,bar.y-2);ctx.restore();});});}};
+    charts[`c-mvr-s-${prefix}`] = new Chart(ctxS, {type:'bar',plugins:[dlS],
+      data:{labels:MESES_2026,datasets:[
+        {label:'Meta máxima',data:saidasMeta,backgroundColor:'rgba(246,38,66,0.15)',borderRadius:3,borderSkipped:false},
+        {label:'Realizado',data:[...saidasReal.slice(0,nReal),...Array(12-nReal).fill(null)],backgroundColor:'#F62642',borderRadius:3,borderSkipped:false},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:16}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw??'—'}`}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#888',autoSkip:false}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10},color:'#888'}}}}});
+  }
+
   // Chart: ativos acumulado
   destroyChart(`c-mvr-a-${prefix}`);
   const ctx2 = document.getElementById(`c-mvr-a-${prefix}`);
@@ -618,14 +670,68 @@ function renderMVRMensal(prefix, metaE, realE, metaAcum, ativosInicio, saidasRea
   }
 }
 
+
+
+// DATE FILTER
+let filterDe = '', filterAte = '';
+
+function initDateFilter() {
+  const de = document.getElementById('f-de');
+  const ate = document.getElementById('f-ate');
+  if (!de || !ate || de.options.length > 1) return;
+  ALL_PERIODS.forEach(p => {
+    const [y,m] = p.split('-');
+    const label = `${m}/${y}`;
+    de.add(new Option(label, p));
+    ate.add(new Option(label, p));
+  });
+  // Set default ate to last period
+  ate.value = ALL_PERIODS[ALL_PERIODS.length-1];
+  filterDe = '';
+  filterAte = ALL_PERIODS[ALL_PERIODS.length-1];
+}
+
+function clearDateFilter() {
+  document.getElementById('f-de').value = '';
+  document.getElementById('f-ate').value = ALL_PERIODS[ALL_PERIODS.length-1];
+  filterDe = '';
+  filterAte = ALL_PERIODS[ALL_PERIODS.length-1];
+  applyFilters();
+}
+
+function getFilteredPeriods() {
+  const de = document.getElementById('f-de').value || ALL_PERIODS[0];
+  const ate = document.getElementById('f-ate').value || ALL_PERIODS[ALL_PERIODS.length-1];
+  return ALL_PERIODS.filter(p => p >= de && p <= ate);
+}
+
+function getFilteredPeriodIndices() {
+  const de = document.getElementById('f-de').value || ALL_PERIODS[0];
+  const ate = document.getElementById('f-ate').value || ALL_PERIODS[ALL_PERIODS.length-1];
+  const start = ALL_PERIODS.indexOf(de);
+  const end = ALL_PERIODS.indexOf(ate);
+  return {start: start < 0 ? 0 : start, end: end < 0 ? ALL_PERIODS.length-1 : end};
+}
+
+// MRR HISTÓRICO
+const MRR_PERIODS = ["2022-01","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05"];
+const MRR_LABELS_H = ["01/22","02/22","03/22","04/22","05/22","06/22","07/22","08/22","09/22","10/22","11/22","12/22","01/23","02/23","03/23","04/23","05/23","06/23","07/23","08/23","09/23","10/23","11/23","12/23","01/24","02/24","03/24","04/24","05/24","06/24","07/24","08/24","09/24","10/24","11/24","12/24","01/25","02/25","03/25","04/25","05/25"];
+const MRR_C_H = [68264,70490,74200,80878,81620,84588,84588,87556,94976,99428,103880,102396,106106,106848,106106,103880,103138,107590,112784,121688,124656,118720,126882,136528,139496,140238,141722,147658,147658,147658,152852,149884,155078,149142,150626,144690,140238,139496,137270,146174,149142];
+const MRR_T_H = [229,229,229,229,229,229,229,229,229,458,916,1832,2519,3664,3435,3664,4122,4351,4351,3893,4351,5954,5496,5725,5954,6412,6412,6870,6870,7786,9847,11221,11908,12137,13969,17633,21297,23358,25877,30228,33205];
+const MRR_TOTAL_H = [68493,70719,74429,81107,81849,84817,84817,87785,95205,99886,104796,104228,108625,110512,109541,107544,107260,111941,117135,125581,129007,124674,132378,142253,145450,146650,148134,154528,154528,155444,162699,161105,166986,161279,164595,162323,161535,162854,163147,176402,182347];
+
+// SAÍDAS 2026 META
+
 // FILTERS
 function applyFilters(){
   const sit=(document.getElementById('f-situacao').value||'').toUpperCase();
   const reg=document.getElementById('f-regime').value||'';
+  const de=document.getElementById('f-de')?.value||'';
+  const ate=document.getElementById('f-ate')?.value||'9999-12';
   let fc=rawContab,ft=rawTech;
   if(sit){fc=fc.filter(r=>getSituacao(r)===sit);ft=ft.filter(r=>getSituacao(r)===sit);}
   if(reg){fc=fc.filter(r=>getRegime(r).includes(reg));ft=ft.filter(r=>getRegime(r).includes(reg));}
-  renderGeral(fc,ft);renderTech(ft);renderContab(fc);
+  renderGeral(fc,ft,de,ate);renderTech(ft,de,ate);renderContab(fc,de,ate);
 }
 function clearFilters(){document.getElementById('f-situacao').value='';document.getElementById('f-regime').value='';applyFilters();}
 
@@ -660,15 +766,15 @@ function renderMVR(containerId, items) {
 }
 
 // RENDER GERAL
-function renderGeral(fc,ft){
+function renderGeral(fc,ft,de,ate){
   const ativosC=fc.filter(r=>getSituacao(r)==='ATIVO');
   const ativosT=ft.filter(r=>getSituacao(r)==='ATIVO');
   const total=fc.length+ft.length, ativos=ativosC.length+ativosT.length;
   const honC=ativosC.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
   const recT=ativosT.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
   const mrr=honC+recT;
-  const flowC=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,ALL_PERIODS);
-  const flowT=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,ALL_PERIODS);
+  const filtPeriods=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS; const flowC=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,filtPeriods);
+  const flowT=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,filtPeriods);
   const lastE=flowC.entradas[flowC.entradas.length-1]+flowT.entradas[flowT.entradas.length-1];
   const lastS=flowC.saidas[flowC.saidas.length-1]+flowT.saidas[flowT.saidas.length-1];
   const inativos=fc.filter(r=>getSituacao(r)==='INATIVO').length+ft.filter(r=>getSituacao(r)==='INATIVO').length;
@@ -717,9 +823,9 @@ function renderGeral(fc,ft){
 
   const e12C=flowC.entradas.slice(LAST12),s12C=flowC.saidas.slice(LAST12);
   const e12T=flowT.entradas.slice(LAST12),s12T=flowT.saidas.slice(LAST12);
-  mkFlowConsolidado('c-geral-flow',ALL_LABELS.slice(LAST12),e12C,e12T,s12C,s12T);
+  const gLabels=filtPeriods.map(p=>{const[y,m]=p.split('-');return`${m}/${y.slice(2)}`;}).slice(-12); mkFlowConsolidado('c-geral-flow',gLabels,e12C,e12T,s12C,s12T);
   const saldo12=e12C.map((e,i)=>(e+e12T[i])-(s12C[i]+s12T[i]));
-  mkSaldoBar('c-geral-saldo',ALL_LABELS.slice(LAST12),saldo12);
+  mkSaldoBar('c-geral-saldo',gLabels,saldo12);
   setInsight('insight-geral',saldo12);
 
   // MVR MENSAL GERAL
@@ -729,6 +835,7 @@ function renderGeral(fc,ft){
   const realS_total = realMC.saidas.map((v,i)=>v+realMT.saidas[i]);
   renderMVRMensal('geral', META_E_TOTAL_M, realE_total, META_ACUM_TOTAL, ativos, realS_total, META_S_MENSAL);
 
+  renderMRRCharts(de, ate);
   mkDoughnut('c-geral-receita',{'Contabilidade':Math.round(honC/1000),'Lucralize Tech':Math.round(recT/1000)},'leg-geral-receita',true);
   mkDoughnut('c-geral-status',countBy([...fc,...ft],r=>capFirst(getSituacao(r))),'leg-geral-status');
   const origemAll={};
@@ -737,12 +844,12 @@ function renderGeral(fc,ft){
   renderGeo('geral',[...fc,...ft]);
 }
 
-function renderTech(ft){
+function renderTech(ft,de,ate){
   const ativos=ft.filter(r=>getSituacao(r)==='ATIVO');
   const rec=ativos.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
   const inativos=ft.filter(r=>getSituacao(r)==='INATIVO').length;
   const baixadas=ft.filter(r=>getSituacao(r)==='BAIXADA').length;
-  const flowT=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,ALL_PERIODS);
+  const filtPeriodsT=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS; const flowT=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,filtPeriodsT);
   const lastE=flowT.entradas[flowT.entradas.length-1];
   const lastS=flowT.saidas[flowT.saidas.length-1];
 
@@ -773,8 +880,8 @@ function renderTech(ft){
   ]);
 
   const e12=flowT.entradas.slice(LAST12),s12=flowT.saidas.slice(LAST12);
-  mkFlowBar('c-tech-flow',ALL_LABELS.slice(LAST12),e12,s12);
-  mkSaldoBar('c-tech-saldo',ALL_LABELS.slice(LAST12),e12.map((e,i)=>e-s12[i]));
+  const tLabels=filtPeriodsT.map(p=>{const[y,m]=p.split('-');return`${m}/${y.slice(2)}`;}).slice(-12); mkFlowBar('c-tech-flow',tLabels,e12,s12);
+  mkSaldoBar('c-tech-saldo',tLabels,e12.map((e,i)=>e-s12[i]));
   setInsight('insight-tech',e12.map((e,i)=>e-s12[i]));
 
   // MVR MENSAL TECH
@@ -791,12 +898,12 @@ function renderTech(ft){
   renderGeo('tech',ft);
 }
 
-function renderContab(fc){
+function renderContab(fc,de,ate){
   const ativos=fc.filter(r=>getSituacao(r)==='ATIVO');
   const hon=ativos.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
   const inativos=fc.filter(r=>getSituacao(r)==='INATIVO').length;
   const baixadas=fc.filter(r=>getSituacao(r)==='BAIXADA').length;
-  const flowC=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,ALL_PERIODS);
+  const filtPeriodsC=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS; const flowC=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,filtPeriodsC);
   const lastE=flowC.entradas[flowC.entradas.length-1];
   const lastS=flowC.saidas[flowC.saidas.length-1];
 
@@ -826,8 +933,8 @@ function renderContab(fc){
   ]);
 
   const e12=flowC.entradas.slice(LAST12),s12=flowC.saidas.slice(LAST12);
-  mkFlowBar('c-cont-flow',ALL_LABELS.slice(LAST12),e12,s12);
-  mkSaldoBar('c-cont-saldo',ALL_LABELS.slice(LAST12),e12.map((e,i)=>e-s12[i]));
+  const cLabels=filtPeriodsC.map(p=>{const[y,m]=p.split('-');return`${m}/${y.slice(2)}`;}).slice(-12); mkFlowBar('c-cont-flow',cLabels,e12,s12);
+  mkSaldoBar('c-cont-saldo',cLabels,e12.map((e,i)=>e-s12[i]));
   setInsight('insight-cont',e12.map((e,i)=>e-s12[i]));
 
   // MVR MENSAL CONTAB
@@ -844,6 +951,81 @@ function renderContab(fc){
   mkDoughnut('c-cont-carteira',countBy(fc,r=>fv(r,'CarteiraGS_x0020_Escolha_x0029_','CarteiraGS_x0020_Escolha_x0029','Carteira GS')),'leg-cont-carteira');
   mkHBar('c-cont-origem',topN(countBy(fc,r=>fv(r,'Origem_x0020_','Origem ','Origem')),10),'#0C7488');
   renderGeo('cont',fc);
+}
+
+
+function mkMRRChart(id, labels, datasets) {
+  destroyChart(id);
+  const ctx = document.getElementById(id); if(!ctx) return;
+  const dlPlugin = {id:'mrr_dl', afterDatasetsDraw(chart) {
+    const ctx = chart.ctx;
+    // Only label last dataset (total) at every 4th point
+    const ds = chart.data.datasets[chart.data.datasets.length-1];
+    const meta = chart.getDatasetMeta(chart.data.datasets.length-1);
+    const step = Math.ceil(meta.data.length / 12);
+    meta.data.forEach((pt, i) => {
+      if (i % step !== 0 && i !== meta.data.length-1) return;
+      const val = ds.data[i]; if (!val) return;
+      ctx.save();
+      ctx.font = '8px Poppins,sans-serif';
+      ctx.fillStyle = '#0E1428';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('R$'+(val/1000).toFixed(0)+'k', pt.x, pt.y-4);
+      ctx.restore();
+    });
+  }};
+  charts[id] = new Chart(ctx, {
+    type: 'bar',
+    plugins: [dlPlugin],
+    data: {labels, datasets},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      layout: {padding: {top: 20}},
+      plugins: {legend: {display: false}, tooltip: {callbacks: {label: c => ` ${c.dataset.label}: R$${Math.round(c.raw/1000)}k`}}},
+      scales: {
+        x: {stacked: true, grid: {display: false}, ticks: {font: {size: 9}, color: '#888', maxTicksLimit: 18, maxRotation: 45}},
+        y: {stacked: true, grid: {color: 'rgba(128,128,128,0.08)'}, ticks: {font: {size: 10}, color: '#888', callback: v => 'R$'+(v/1000).toFixed(0)+'k'}}
+      }
+    }
+  });
+}
+
+function renderMRRCharts(de, ate) {
+  const start = de ? MRR_PERIODS.indexOf(de) : 0;
+  const end = ate ? MRR_PERIODS.indexOf(ate) : MRR_PERIODS.length-1;
+  const s = start < 0 ? 0 : start;
+  const e = end < 0 ? MRR_PERIODS.length-1 : end;
+  const labels = MRR_LABELS_H.slice(s, e+1);
+  const mrrC = MRR_C_H.slice(s, e+1);
+  const mrrT = MRR_T_H.slice(s, e+1);
+  const mrrTot = MRR_TOTAL_H.slice(s, e+1);
+
+  // Geral - stacked
+  mkMRRChart('c-mrr-hist-geral', labels, [
+    {label:'Contabilidade', data:mrrC, backgroundColor:'#0C7488', borderRadius:2, borderSkipped:false},
+    {label:'Tech', data:mrrT, backgroundColor:'#91DBE4', borderRadius:2, borderSkipped:false},
+  ]);
+
+  // Tech only - line
+  destroyChart('c-mrr-hist-tech');
+  const ctxT = document.getElementById('c-mrr-hist-tech');
+  if(ctxT) {
+    charts['c-mrr-hist-tech'] = new Chart(ctxT, {type:'bar', data:{labels, datasets:[
+      {label:'MRR Tech', data:mrrT, backgroundColor:'#0C7488', borderRadius:2, borderSkipped:false}
+    ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` MRR Tech: R$${Math.round(c.raw/1000)}k`}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:9},color:'#888',maxTicksLimit:18,maxRotation:45}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10},color:'#888',callback:v=>'R$'+(v/1000).toFixed(0)+'k'}}}}});
+  }
+
+  // Contab only
+  destroyChart('c-mrr-hist-cont');
+  const ctxC = document.getElementById('c-mrr-hist-cont');
+  if(ctxC) {
+    charts['c-mrr-hist-cont'] = new Chart(ctxC, {type:'bar', data:{labels, datasets:[
+      {label:'MRR Contabilidade', data:mrrC, backgroundColor:'#F62642', borderRadius:2, borderSkipped:false}
+    ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` MRR Contab: R$${Math.round(c.raw/1000)}k`}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:9},color:'#888',maxTicksLimit:18,maxRotation:45}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10},color:'#888',callback:v=>'R$'+(v/1000).toFixed(0)+'k'}}}}});
+  }
 }
 
 function renderGeo(prefix,arr){
