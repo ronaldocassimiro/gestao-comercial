@@ -597,12 +597,16 @@ function buildRealMensal2026(arr, getE, getS) {
 }
 
 function buildAcumReal(inicio, entradas, saidas, nMeses) {
+  // O último ponto com dados reais deve ser exatamente "inicio" (ativos reais de hoje)
+  // Os pontos anteriores são calculados de trás para frente
+  const result = entradas.map(() => null);
   let c = inicio;
-  return entradas.map((e,i) => {
-    if (i >= nMeses) return null;
-    c += e - saidas[i];
-    return c;
-  });
+  // Preenche de trás para frente a partir do mês atual
+  for (let i = nMeses - 1; i >= 0; i--) {
+    result[i] = c;
+    if (i > 0) c -= (entradas[i] - saidas[i]); // desfaz o movimento deste mês
+  }
+  return result;
 }
 
 function buildGapAcum(real, meta, nMeses) {
@@ -926,8 +930,12 @@ function renderGeral(fc,ft,de,ate){
   const _mrrMetaTotal=META.mrr_contab+META.mrr_tech;
   const _metaAcumMRR=MESES_2026.map((_,i)=>Math.round(_mrrMetaTotal*(i+1)/12));
   // Bases 2025 calculadas dinamicamente do SharePoint (fechamento dez/2025)
-  const _base2025C = rawContab.filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,'2025-12')==='ATIVO').length;
-  const _base2025T = rawTech.filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,'2025-12')==='ATIVO').length;
+  // Usa snapshotPorPeriodo para pegar quem havia entrado até dez/2025
+  // e getSituacaoSnapshot para determinar quem era ATIVO naquela data
+  const _snap2025C = snapshotPorPeriodo(rawContab, getEntradaYM_contab, '2025-12');
+  const _snap2025T = snapshotPorPeriodo(rawTech, getEntradaYM_tech, '2025-12');
+  const _base2025C = _snap2025C.filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,'2025-12')==='ATIVO').length;
+  const _base2025T = _snap2025T.filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,'2025-12')==='ATIVO').length;
   const _base2025G = _base2025C + _base2025T;
   renderMVR('mvr-geral',[
     {title:'Clientes Ativos',real:_ativosRealG,meta:META.ativos_total,realFmt:_ativosRealG,metaFmt:META.ativos_total,metaAcum:META_ACUM_TOTAL,base:_base2025G},
