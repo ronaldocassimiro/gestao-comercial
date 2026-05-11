@@ -625,7 +625,16 @@ function renderMVRMensal(prefix, metaE, realE, metaAcum, ativosInicio, saidasRea
   const nReal = realE.filter(v=>v>0).length || MESES_REAIS;
   const acumReal = buildAcumReal(ativosInicio, realE, saidasReal, nReal);
   const gapE = buildGapAcum(realE, metaE, nReal);
-  const gapA = acumReal.map((v,i) => v !== null ? v - metaAcum[i] : null);
+  // gapA: calcula de frente para frente partindo da base real
+  // acumReal trabalha de trás para frente, então recalculamos o acumulado progressivo para o gap
+  const gapA = (() => {
+    let c = ativosInicio;
+    return realE.map((e,i) => {
+      if (i >= nReal) return null;
+      c += e - (saidasReal[i]||0);
+      return c - metaAcum[i];
+    });
+  })();
 
   el.innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px">
