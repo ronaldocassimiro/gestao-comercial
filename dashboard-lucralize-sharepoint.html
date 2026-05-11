@@ -777,15 +777,13 @@ function renderGeral(fc,ft,de,ate){
   const flowC=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,filtPeriods);
   const flowT=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,filtPeriods);
   // KPIs de entradas/saídas usam fc/ft filtrados
-  const flowCf=buildFlow(fc,getEntradaYM_contab,getSaidaYM_contab,filtPeriods);
-  const flowTf=buildFlow(ft,getEntradaYM_tech,getSaidaYM_tech,filtPeriods);
-  const lastE=flowCf.entradas[flowCf.entradas.length-1]+flowTf.entradas[flowTf.entradas.length-1];
-  const lastS=flowCf.saidas[flowCf.saidas.length-1]+flowTf.saidas[flowTf.saidas.length-1];
+  // Último período selecionado
+  const lastPeriod = filtPeriods.length >= 2 ? filtPeriods[filtPeriods.length-2] : (filtPeriods[0] || ALL_PERIODS[ALL_PERIODS.length-2]);
+  const lastE = fc.filter(r=>getEntradaYM_contab(r)===lastPeriod).length + ft.filter(r=>getEntradaYM_tech(r)===lastPeriod).length;
+  const lastS = fc.filter(r=>getSaidaYM_contab(r)===lastPeriod).length + ft.filter(r=>getSaidaYM_tech(r)===lastPeriod).length;
   // Entradas acumuladas 2026 com filtro
   const periodos2026=filtPeriods.filter(p=>p>='2026-01');
-  const entradas2026Cf=buildFlow(fc,getEntradaYM_contab,getSaidaYM_contab,periodos2026.length?periodos2026:['2026-01']);
-  const entradas2026Tf=buildFlow(ft,getEntradaYM_tech,getSaidaYM_tech,periodos2026.length?periodos2026:['2026-01']);
-  const entradas2026Acum=entradas2026Cf.entradas.reduce((a,b)=>a+b,0)+entradas2026Tf.entradas.reduce((a,b)=>a+b,0);
+  const entradas2026Acum = periodos2026.reduce((sum,p) => sum + fc.filter(r=>getEntradaYM_contab(r)===p).length + ft.filter(r=>getEntradaYM_tech(r)===p).length, 0);
   const inativos=fc.filter(r=>getSituacao(r)==='INATIVO').length+ft.filter(r=>getSituacao(r)==='INATIVO').length;
   const baixadas=fc.filter(r=>getSituacao(r)==='BAIXADA').length+ft.filter(r=>getSituacao(r)==='BAIXADA').length;
 
@@ -794,7 +792,7 @@ function renderGeral(fc,ft,de,ate){
     {label:'Clientes Ativos',value:ativos,acc:'r',sub:total?Math.round(ativos/total*100)+'% do total':'–'},
     {label:'MRR Consolidado',value:fmtBRL(mrr),acc:'tl',sub:'Honorários + mensalidades'},
     {label:'Ticket Médio Geral',value:fmtBRL(ativos?mrr/ativos:0),acc:'nv',sub:'Por cliente ativo'},
-    {label:'Entradas último mês',value:lastE,vc:'green',sub:'Novos contratos'},
+    {label:'Entradas — '+lastPeriod.split('-').reverse().join('/'),value:lastE,vc:'green',sub:'Novos contratos'},
     {label:'Saídas último mês',value:lastS,acc:'r',vc:'red',sub:'Cancelamentos'},
     {label:'Inativos Total',value:inativos,acc:'am',sub:'Aguardando reativação'},
     {label:'Baixadas Total',value:baixadas,acc:'nv',sub:'Empresas encerradas'},
@@ -860,16 +858,16 @@ function renderTech(ft,de,ate){
   const baixadas=ft.filter(r=>getSituacao(r)==='BAIXADA').length;
   const filtPeriodsT=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS;
   const flowT=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,filtPeriodsT);
-  const flowTf=buildFlow(ft,getEntradaYM_tech,getSaidaYM_tech,filtPeriodsT);
-  const lastE=flowTf.entradas[flowTf.entradas.length-1];
-  const lastS=flowTf.saidas[flowTf.saidas.length-1];
+  const lastPeriodT = filtPeriodsT.length >= 2 ? filtPeriodsT[filtPeriodsT.length-2] : (filtPeriodsT[0] || ALL_PERIODS[ALL_PERIODS.length-2]);
+  const lastE = ft.filter(r=>getEntradaYM_tech(r)===lastPeriodT).length;
+  const lastS = ft.filter(r=>getSaidaYM_tech(r)===lastPeriodT).length;
 
   renderKPIs('kpi-tech',[
     {label:'Total Tech',value:ft.length,sub:'na base filtrada'},
     {label:'Ativos',value:ativos.length,acc:'r',sub:ft.length?Math.round(ativos.length/ft.length*100)+'% do total':'–'},
     {label:'MRR',value:fmtBRL(rec),acc:'tl',sub:'Clientes ativos'},
     {label:'Ticket Médio',value:'R$ '+(ativos.length?Math.round(rec/ativos.length).toLocaleString('pt-BR'):'0'),acc:'nv',sub:'Por ativo'},
-    {label:'Entradas último mês',value:lastE,vc:'green',sub:'Novos contratos'},
+    {label:'Entradas — '+lastPeriod.split('-').reverse().join('/'),value:lastE,vc:'green',sub:'Novos contratos'},
     {label:'Saídas último mês',value:lastS,acc:'r',vc:'red',sub:'Cancelamentos'},
     {label:'Inativos',value:inativos,acc:'am',sub:'Aguardando reativação'},
     {label:'Baixadas',value:baixadas,acc:'nv',sub:'Encerradas'},
@@ -916,16 +914,16 @@ function renderContab(fc,de,ate){
   const baixadas=fc.filter(r=>getSituacao(r)==='BAIXADA').length;
   const filtPeriodsC=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS;
   const flowC=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,filtPeriodsC);
-  const flowCf=buildFlow(fc,getEntradaYM_contab,getSaidaYM_contab,filtPeriodsC);
-  const lastE=flowCf.entradas[flowCf.entradas.length-1];
-  const lastS=flowCf.saidas[flowCf.saidas.length-1];
+  const lastPeriodC = filtPeriodsC.length >= 2 ? filtPeriodsC[filtPeriodsC.length-2] : (filtPeriodsC[0] || ALL_PERIODS[ALL_PERIODS.length-2]);
+  const lastE = fc.filter(r=>getEntradaYM_contab(r)===lastPeriodC).length;
+  const lastS = fc.filter(r=>getSaidaYM_contab(r)===lastPeriodC).length;
 
   renderKPIs('kpi-cont',[
     {label:'Total Contabilidade',value:fc.length,sub:'na base filtrada'},
     {label:'Ativos',value:ativos.length,acc:'r',sub:fc.length?Math.round(ativos.length/fc.length*100)+'% do total':'–'},
     {label:'Honorários/Mês',value:fmtBRL(hon),acc:'tl',sub:'Clientes ativos'},
     {label:'Ticket Médio',value:'R$ '+(ativos.length?Math.round(hon/ativos.length).toLocaleString('pt-BR'):'0'),acc:'nv',sub:'Por ativo'},
-    {label:'Entradas último mês',value:lastE,vc:'green',sub:'Novos contratos'},
+    {label:'Entradas — '+lastPeriod.split('-').reverse().join('/'),value:lastE,vc:'green',sub:'Novos contratos'},
     {label:'Saídas último mês',value:lastS,acc:'r',vc:'red',sub:'Cancelamentos'},
     {label:'Inativos',value:inativos,acc:'am',sub:'Aguardando reativação'},
     {label:'Baixadas',value:baixadas,acc:'nv',sub:'Encerradas'},
