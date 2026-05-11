@@ -491,7 +491,7 @@ async function exchangeCode(code){const body=new URLSearchParams({client_id:CONF
 async function graphGet(url){const r=await fetch(`https://graph.microsoft.com/v1.0${url}`,{headers:{Authorization:`Bearer ${accessToken}`}});if(!r.ok)throw new Error(`Graph API error: ${r.status} ${url}`);return r.json();}
 async function getSiteId(siteUrl){return(await graphGet(`/sites/${siteUrl}`)).id;}
 async function getListItems(siteId,listName){let items=[],url=`/sites/${siteId}/lists/${encodeURIComponent(listName)}/items?expand=fields&$top=999`;while(url){const d=await graphGet(url);items=items.concat(d.value||[]);url=d['@odata.nextLink']?d['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0',''):null;}return items.map(i=>i.fields||{});}
-async function loadAll(){initDateFilter();showLoading(true);hideErr();try{const me=await graphGet('/me');setUserUI(me);const sIdC=await getSiteId(CONFIG.contabilidade.siteUrl);rawContab=await getListItems(sIdC,CONFIG.contabilidade.listName);const sIdT=await getSiteId(CONFIG.tech.siteUrl);rawTech=await getListItems(sIdT,CONFIG.tech.listName);document.getElementById('last-upd').textContent='Atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});applyFilters();}catch(e){showErr('Erro ao carregar dados: '+e.message);}finally{showLoading(false);}}
+async function loadAll(){showLoading(true);hideErr();try{const me=await graphGet('/me');setUserUI(me);const sIdC=await getSiteId(CONFIG.contabilidade.siteUrl);rawContab=await getListItems(sIdC,CONFIG.contabilidade.listName);const sIdT=await getSiteId(CONFIG.tech.siteUrl);rawTech=await getListItems(sIdT,CONFIG.tech.listName);document.getElementById('last-upd').textContent='Atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});applyFilters();}catch(e){showErr('Erro ao carregar dados: '+e.message);}finally{showLoading(false);}}
 
 // FIELD HELPERS
 function fv(r,...keys){for(const k of keys)if(r[k]!==undefined&&r[k]!==null&&r[k]!=='')return String(r[k]);return'';}
@@ -773,10 +773,19 @@ function renderGeral(fc,ft,de,ate){
   const honC=ativosC.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
   const recT=ativosT.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
   const mrr=honC+recT;
-  const filtPeriods=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS; const flowC=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,filtPeriods);
+  const filtPeriods=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS;
+  const flowC=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,filtPeriods);
   const flowT=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,filtPeriods);
-  const lastE=flowC.entradas[flowC.entradas.length-1]+flowT.entradas[flowT.entradas.length-1];
-  const lastS=flowC.saidas[flowC.saidas.length-1]+flowT.saidas[flowT.saidas.length-1];
+  // KPIs de entradas/saídas usam fc/ft filtrados
+  const flowCf=buildFlow(fc,getEntradaYM_contab,getSaidaYM_contab,filtPeriods);
+  const flowTf=buildFlow(ft,getEntradaYM_tech,getSaidaYM_tech,filtPeriods);
+  const lastE=flowCf.entradas[flowCf.entradas.length-1]+flowTf.entradas[flowTf.entradas.length-1];
+  const lastS=flowCf.saidas[flowCf.saidas.length-1]+flowTf.saidas[flowTf.saidas.length-1];
+  // Entradas acumuladas 2026 com filtro
+  const periodos2026=filtPeriods.filter(p=>p>='2026-01');
+  const entradas2026Cf=buildFlow(fc,getEntradaYM_contab,getSaidaYM_contab,periodos2026.length?periodos2026:['2026-01']);
+  const entradas2026Tf=buildFlow(ft,getEntradaYM_tech,getSaidaYM_tech,periodos2026.length?periodos2026:['2026-01']);
+  const entradas2026Acum=entradas2026Cf.entradas.reduce((a,b)=>a+b,0)+entradas2026Tf.entradas.reduce((a,b)=>a+b,0);
   const inativos=fc.filter(r=>getSituacao(r)==='INATIVO').length+ft.filter(r=>getSituacao(r)==='INATIVO').length;
   const baixadas=fc.filter(r=>getSituacao(r)==='BAIXADA').length+ft.filter(r=>getSituacao(r)==='BAIXADA').length;
 
@@ -795,7 +804,7 @@ function renderGeral(fc,ft,de,ate){
   const fatAnualProj=mrr*12;
   renderMVR('mvr-geral',[
     {title:'Clientes Ativos',real:ativos,meta:META.ativos_total,realFmt:ativos,metaFmt:META.ativos_total},
-    {title:'Entradas (acum. 2026)',real:(() => { const rC=buildRealMensal2026(rawContab,getEntradaYM_contab,getSaidaYM_contab); const rT=buildRealMensal2026(rawTech,getEntradaYM_tech,getSaidaYM_tech); return rC.entradas.reduce((a,b)=>a+b,0)+rT.entradas.reduce((a,b)=>a+b,0); })(),meta:META.entradas_total,realFmt:(() => { const rC=buildRealMensal2026(rawContab,getEntradaYM_contab,getSaidaYM_contab); const rT=buildRealMensal2026(rawTech,getEntradaYM_tech,getSaidaYM_tech); return (rC.entradas.reduce((a,b)=>a+b,0)+rT.entradas.reduce((a,b)=>a+b,0))+' contratos'; })(),metaFmt:META.entradas_total+' contratos'},
+    {title:'Entradas (acum. 2026)',real:entradas2026Acum,meta:META.entradas_total,realFmt:entradas2026Acum+' contratos',metaFmt:META.entradas_total+' contratos'},
     {title:'MRR Consolidado',real:Math.round(mrr),meta:META.mrr_contab+META.mrr_tech,realFmt:fmtBRL(mrr),metaFmt:fmtBRL(META.mrr_contab+META.mrr_tech)},
     {title:'Faturamento Anual (proj.)',real:Math.round(fatAnualProj),meta:META.fat_total,realFmt:fmtM(fatAnualProj),metaFmt:fmtM(META.fat_total)},
   ]);
@@ -849,9 +858,11 @@ function renderTech(ft,de,ate){
   const rec=ativos.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
   const inativos=ft.filter(r=>getSituacao(r)==='INATIVO').length;
   const baixadas=ft.filter(r=>getSituacao(r)==='BAIXADA').length;
-  const filtPeriodsT=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS; const flowT=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,filtPeriodsT);
-  const lastE=flowT.entradas[flowT.entradas.length-1];
-  const lastS=flowT.saidas[flowT.saidas.length-1];
+  const filtPeriodsT=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS;
+  const flowT=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,filtPeriodsT);
+  const flowTf=buildFlow(ft,getEntradaYM_tech,getSaidaYM_tech,filtPeriodsT);
+  const lastE=flowTf.entradas[flowTf.entradas.length-1];
+  const lastS=flowTf.saidas[flowTf.saidas.length-1];
 
   renderKPIs('kpi-tech',[
     {label:'Total Tech',value:ft.length,sub:'na base filtrada'},
@@ -903,9 +914,11 @@ function renderContab(fc,de,ate){
   const hon=ativos.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
   const inativos=fc.filter(r=>getSituacao(r)==='INATIVO').length;
   const baixadas=fc.filter(r=>getSituacao(r)==='BAIXADA').length;
-  const filtPeriodsC=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS; const flowC=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,filtPeriodsC);
-  const lastE=flowC.entradas[flowC.entradas.length-1];
-  const lastS=flowC.saidas[flowC.saidas.length-1];
+  const filtPeriodsC=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS;
+  const flowC=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,filtPeriodsC);
+  const flowCf=buildFlow(fc,getEntradaYM_contab,getSaidaYM_contab,filtPeriodsC);
+  const lastE=flowCf.entradas[flowCf.entradas.length-1];
+  const lastS=flowCf.saidas[flowCf.saidas.length-1];
 
   renderKPIs('kpi-cont',[
     {label:'Total Contabilidade',value:fc.length,sub:'na base filtrada'},
@@ -1351,7 +1364,7 @@ function setUserUI(me){const name=me.displayName||me.mail||'Usuário',parts=name
 function showLoading(v){document.getElementById('loading').style.display=v?'flex':'none';}
 function showErr(msg){const e=document.getElementById('err-banner');e.textContent=msg;e.style.display='block';}
 function hideErr(){document.getElementById('err-banner').style.display='none';}
-function showApp(){document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';}
+function showApp(){document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';initDateFilter();}
 function showLoginErr(msg){const e=document.createElement('div');e.style.cssText='color:#F62642;font-size:12px;margin-top:10px;text-align:center';e.textContent=msg;document.querySelector('.login-card').appendChild(e);}
 
 // BOOT
