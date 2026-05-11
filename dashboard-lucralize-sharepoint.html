@@ -879,12 +879,17 @@ function renderGeral(fc,ft,de,ate){
   const metaAcum=[489];
   const metaE=[40,30,18,39,24,32,61,50,47,32,35,66];
   for(let i=0;i<11;i++) metaAcum.push(metaAcum[i]+metaE[i]-META_S_MENSAL[i]);
-  const meta2026Labels=['Jan/26','Fev/26','Mar/26','Abr/26','Mai/26','Jun/26','Jul/26','Ago/26','Set/26','Out/26','Nov/26','Dez/26'];
-  const labelsComMeta=[...evoLabels,...meta2026Labels];
-  const cumTotalComMeta=[...evoCumTotal,...Array(12).fill(null)];
-  const cumCComMeta=[...evoCumC,...Array(12).fill(null)];
-  const cumTComMeta=[...evoCumT,...Array(12).fill(null)];
-  const metaLine=[...Array(evoLabels.length).fill(null),...metaAcum];
+  // Meta posicionada nos índices de 2026 já existentes em evoLabels (sem duplicar meses)
+  const labelsComMeta=evoLabels;
+  const cumTotalComMeta=evoCumTotal;
+  const cumCComMeta=evoCumC;
+  const cumTComMeta=evoCumT;
+  const metaLine=evoLabels.map((_,i)=>{
+    const p=ALL_PERIODS[evoS+i];
+    if(!p||p<'2026-01'||p>'2026-12') return null;
+    const mi=parseInt(p.split('-')[1])-1;
+    return metaAcum[mi]??null;
+  });
 
   mkLineMulti('c-geral-evolucao',labelsComMeta,[
     {label:'Tech',data:cumTComMeta,color:'#0C7488',dash:false},
