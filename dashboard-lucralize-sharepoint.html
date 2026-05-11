@@ -225,11 +225,13 @@ main{max-width:1400px;margin:0 auto;padding:18px}
         <div class="ct">Clientes Ativos — Mês a Mês</div>
         <div class="cw" style="height:250px"><canvas id="c-geral-evolucao" role="img" aria-label="Evolução mensal consolidada">Evolução acumulada.</canvas></div>
         <div class="leg">
-          <span><span class="ld" style="background:#0C7488"></span>Tech</span>
-          <span><span class="ld" style="background:#F62642"></span>Contabilidade</span>
+          <span><span class="ld" style="background:#91DBE4"></span>Entrada Tech</span>
+          <span><span class="ld" style="background:rgba(246,38,66,0.5)"></span>Entrada Contab</span>
           <span><span class="ld" style="background:#0E1428"></span>Total Entradas</span>
           <span><span class="ld" style="background:#657786;opacity:.6"></span>Saídas Acum.</span>
-          <span><span class="ld" style="background:#BA7517"></span>Ativos</span>
+          <span><span class="ld" style="background:#BA7517"></span>Ativos Total</span>
+          <span><span class="ld" style="background:#0C7488"></span>Ativos Tech</span>
+          <span><span class="ld" style="background:#F62642"></span>Ativos Contab</span>
           <span><span class="ld" style="background:#1a7a3a;opacity:.7"></span>Meta 2026</span>
         </div>
       </div>
@@ -928,23 +930,36 @@ function renderGeral(fc,ft,de,ate){
     return metaAcum[mi]??null;
   });
 
-  // Saídas acumuladas (para exibir no gráfico de evolução)
-  const flowCAllS=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,ALL_PERIODS);
-  const flowTAllS=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,ALL_PERIODS);
-  let _cs=0;
-  const cumSaidasAll=ALL_PERIODS.map((_,i)=>{_cs+=flowCAllS.saidas[i]+flowTAllS.saidas[i];return _cs;});
-  const cumSaidasSlice=cumSaidasAll.slice(evoS,evoE+1);
+  // Entradas acumuladas puras (sem subtrair saídas)
+  let _cet=0,_cec=0;
+  const cumEntTAll = ALL_PERIODS.map((_,i)=>{_cet+=flowTAll.entradas[i];return _cet;});
+  const cumEntCAll = ALL_PERIODS.map((_,i)=>{_cec+=flowCAll.entradas[i];return _cec;});
+  const cumEntTotAll = cumEntTAll.map((v,i)=>v+cumEntCAll[i]);
+  const cumEntTSlice = cumEntTAll.slice(evoS,evoE+1);
+  const cumEntCSlice = cumEntCAll.slice(evoS,evoE+1);
+  const cumEntTotSlice = cumEntTotAll.slice(evoS,evoE+1);
 
-  // Ativos reais = Total acumulado - Saídas acumuladas, ancorado nos ativos reais
-  const cumAtivosReal=cumTotalComMeta.map((v,i)=>v!==null&&cumSaidasSlice[i]!==undefined?v-cumSaidasSlice[i]:null);
+  // Saídas acumuladas
+  let _cst=0,_csc=0;
+  const cumSaiTAll = ALL_PERIODS.map((_,i)=>{_cst+=flowTAll.saidas[i];return _cst;});
+  const cumSaiCAll = ALL_PERIODS.map((_,i)=>{_csc+=flowCAll.saidas[i];return _csc;});
+  const cumSaiTotAll = cumSaiTAll.map((v,i)=>v+cumSaiCAll[i]);
+  const cumSaiTotSlice = cumSaiTotAll.slice(evoS,evoE+1);
+
+  // Ativos = entradas acumuladas - saídas acumuladas (ancorado nos ativos reais via cumT/cumC)
+  const ativosSlice = cumTComMeta; // já ancorado: entradas-saídas com offset
+  const ativosTSlice = evoCumT;
+  const ativosCSlice = evoCumC;
 
   mkLineMulti('c-geral-evolucao',labelsComMeta,[
-    {label:'Tech',data:cumTComMeta,color:'#0C7488',dash:false},
-    {label:'Contabilidade',data:cumCComMeta,color:'#F62642',dash:false},
-    {label:'Total Entradas',data:cumTotalComMeta,color:'#0E1428',dash:false},
-    {label:'Saídas Acum.',data:cumSaidasSlice,color:'#657786',dash:true},
-    {label:'Ativos',data:cumAtivosReal,color:'#BA7517',dash:false},
-    {label:'Meta 2026',data:metaLine,color:'#1a7a3a',dash:true},
+    {label:'Entrada Tech',   data:cumEntTSlice,   color:'#91DBE4',dash:false},
+    {label:'Entrada Contab', data:cumEntCSlice,   color:'rgba(246,38,66,0.5)',dash:false},
+    {label:'Total Entradas', data:cumEntTotSlice, color:'#0E1428',dash:false},
+    {label:'Saídas Acum.',   data:cumSaiTotSlice, color:'#657786',dash:true},
+    {label:'Ativos Total',   data:ativosSlice,    color:'#BA7517',dash:false},
+    {label:'Ativos Tech',    data:ativosTSlice,   color:'#0C7488',dash:false},
+    {label:'Ativos Contab',  data:ativosCSlice,   color:'#F62642',dash:false},
+    {label:'Meta 2026',      data:metaLine,       color:'#1a7a3a',dash:true},
   ]);
 
   const fp=window._filtPeriods||ALL_PERIODS;
