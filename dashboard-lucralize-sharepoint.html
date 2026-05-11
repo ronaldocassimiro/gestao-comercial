@@ -443,8 +443,10 @@ const MESES_LABEL=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','
 const ALL_PERIODS = (() => {
   const periods = [];
   const start = new Date(2022, 0, 1);
-  const end = new Date();
-  end.setMonth(end.getMonth() + 12); // 12 meses à frente
+  const now = new Date();
+  // Vai até o fim do ano atual ou dez/2026, o que for maior
+  const endYear = Math.max(now.getFullYear(), 2026);
+  const end = new Date(endYear, 11, 1); // Dezembro do ano final
   let d = new Date(start);
   while (d <= end) {
     periods.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
