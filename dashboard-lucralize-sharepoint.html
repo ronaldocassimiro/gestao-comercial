@@ -393,39 +393,22 @@ main{max-width:1400px;margin:0 auto;padding:18px}
         <div class="card"><div class="ct">Crescimento de Clientes (%) por Ano</div><div class="cw" style="height:220px"><canvas id="c-cresc-pct" role="img" aria-label="Crescimento %">Crescimento %.</canvas></div></div>
       </div>
 
-      <div class="sec-title">📅 Evolução Mensal — Contratos, Saídas e Ativos</div>
+      <div class="sec-title">📅 Evolução Mensal Acumulada — Entradas, Saídas e Ativos</div>
       <div class="card full">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-          <div class="ct" style="margin-bottom:0">Novos Contratos — Mês a Mês</div>
-          <div class="leg">
-            <span><span class="ld" style="background:#0C7488"></span>Contabilidade</span>
-            <span><span class="ld" style="background:#91DBE4"></span>Tech</span>
-          </div>
+        <div class="ct" style="margin-bottom:10px">Entradas, Saídas e Ativos Acumulados — Mês a Mês</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;font-size:11px;color:var(--g1)">
+          <span><span class="ld" style="background:#91DBE4"></span>Entrada Tech</span>
+          <span><span class="ld" style="background:rgba(246,38,66,0.5)"></span>Entrada Contab</span>
+          <span><span class="ld" style="background:#0E1428"></span>Total Entrada</span>
+          <span style="display:flex;align-items:center;gap:3px"><svg width="16" height="6" style="flex-shrink:0"><line x1="0" y1="3" x2="16" y2="3" stroke="#0C7488" stroke-width="1.5" stroke-dasharray="4,3"/></svg>Saída Tech</span>
+          <span style="display:flex;align-items:center;gap:3px"><svg width="16" height="6" style="flex-shrink:0"><line x1="0" y1="3" x2="16" y2="3" stroke="#F62642" stroke-width="1.5" stroke-dasharray="4,3"/></svg>Saída Contab</span>
+          <span style="display:flex;align-items:center;gap:3px"><svg width="16" height="6" style="flex-shrink:0"><line x1="0" y1="3" x2="16" y2="3" stroke="#657786" stroke-width="1.5" stroke-dasharray="4,3"/></svg>Total Saída</span>
+          <span><span class="ld" style="background:#BA7517"></span>Ativos</span>
+          <span><span class="ld" style="background:#0C7488"></span>Ativos Tech</span>
+          <span><span class="ld" style="background:#F62642"></span>Ativos Contab</span>
+          <span style="display:flex;align-items:center;gap:3px"><svg width="16" height="6" style="flex-shrink:0"><line x1="0" y1="3" x2="16" y2="3" stroke="#1a7a3a" stroke-width="1.5" stroke-dasharray="2,2"/></svg>Meta 2026</span>
         </div>
-        <div class="cw" style="height:220px"><canvas id="c-evo-entradas" role="img" aria-label="Entradas mensais">Entradas mensais.</canvas></div>
-      </div>
-      <div class="g2">
-        <div class="card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-            <div class="ct" style="margin-bottom:0">Saídas — Mês a Mês</div>
-            <div class="leg">
-              <span><span class="ld" style="background:#F62642"></span>Contabilidade</span>
-              <span><span class="ld" style="background:#0E1428"></span>Tech</span>
-            </div>
-          </div>
-          <div class="cw" style="height:220px"><canvas id="c-evo-saidas" role="img" aria-label="Saídas mensais">Saídas mensais.</canvas></div>
-        </div>
-        <div class="card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-            <div class="ct" style="margin-bottom:0">Clientes Ativos — Mês a Mês</div>
-            <div class="leg">
-              <span><span class="ld" style="background:#0C7488"></span>Tech</span>
-              <span><span class="ld" style="background:#F62642"></span>Contabilidade</span>
-              <span><span class="ld" style="background:#0E1428"></span>Total</span>
-            </div>
-          </div>
-          <div class="cw" style="height:220px"><canvas id="c-evo-ativos" role="img" aria-label="Ativos mensais">Ativos mensais.</canvas></div>
-        </div>
+        <div class="cw" style="height:320px"><canvas id="c-evo-acumulado" role="img" aria-label="Evolução acumulada entradas saídas ativos">Evolução acumulada.</canvas></div>
       </div>
 
       <div class="sec-title">🗓️ Sazonalidade — Representatividade Mensal de Entradas (%)</div>
@@ -1192,88 +1175,77 @@ function renderCrescimento(){
   const ctx2=document.getElementById('c-cresc-pct');
   if(ctx2) charts['c-cresc-pct']=new Chart(ctx2,{type:'bar',data:{labels:anos,datasets:[{data:pcts,backgroundColor:pcts.map(v=>v>=0?'#0C7488':'#F62642'),borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels_custom:{enabled:true,suffix:'%'}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#888'}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:11},color:'#888',callback:v=>v+'%'}}}}});
 
-  // ─── Evolução Mensal: Entradas, Saídas, Ativos ───
-  const evoLabelsAll = ALL_LABELS;
-
-  // Entradas mensais — Contab + Tech empilhados
+  // ─── Evolução Mensal Acumulada: Entradas, Saídas, Ativos + Meta ───
   const flowCEvo = buildFlow(rawContab, getEntradaYM_contab, getSaidaYM_contab, ALL_PERIODS);
   const flowTEvo = buildFlow(rawTech, getEntradaYM_tech, getSaidaYM_tech, ALL_PERIODS);
 
-  destroyChart('c-evo-entradas');
-  const ctxEE = document.getElementById('c-evo-entradas');
-  if (ctxEE) {
-    charts['c-evo-entradas'] = new Chart(ctxEE, {
-      type: 'bar',
-      data: {
-        labels: evoLabelsAll,
-        datasets: [
-          {label:'Contabilidade', data:flowCEvo.entradas, backgroundColor:'#0C7488', borderRadius:2, borderSkipped:false, stack:'e'},
-          {label:'Tech',          data:flowTEvo.entradas, backgroundColor:'#91DBE4', borderRadius:2, borderSkipped:false, stack:'e'},
-        ]
-      },
-      options: {
-        responsive:true, maintainAspectRatio:false,
-        plugins:{legend:{display:false}, tooltip:{mode:'index', intersect:false, callbacks:{label:c=>` ${c.dataset.label}: ${c.raw}`}}},
-        scales:{
-          x:{stacked:true, grid:{display:false}, ticks:{font:{size:9}, color:'#888', maxTicksLimit:20, maxRotation:45}},
-          y:{stacked:true, grid:{color:'rgba(128,128,128,0.08)'}, ticks:{font:{size:10}, color:'#888'}}
-        }
-      }
-    });
-  }
+  // Entradas acumuladas
+  let cet=0, cec=0;
+  const cumEntT_e  = flowTEvo.entradas.map(v=>{cet+=v;return cet;});
+  const cumEntC_e  = flowCEvo.entradas.map(v=>{cec+=v;return cec;});
+  const cumEntTot_e = cumEntT_e.map((v,i)=>v+cumEntC_e[i]);
 
-  // Saídas mensais — Contab + Tech empilhados
-  destroyChart('c-evo-saidas');
-  const ctxES = document.getElementById('c-evo-saidas');
-  if (ctxES) {
-    charts['c-evo-saidas'] = new Chart(ctxES, {
-      type: 'bar',
-      data: {
-        labels: evoLabelsAll,
-        datasets: [
-          {label:'Contabilidade', data:flowCEvo.saidas, backgroundColor:'#F62642', borderRadius:2, borderSkipped:false, stack:'s'},
-          {label:'Tech',          data:flowTEvo.saidas, backgroundColor:'#0E1428', borderRadius:2, borderSkipped:false, stack:'s'},
-        ]
-      },
-      options: {
-        responsive:true, maintainAspectRatio:false,
-        plugins:{legend:{display:false}, tooltip:{mode:'index', intersect:false, callbacks:{label:c=>` ${c.dataset.label}: ${c.raw}`}}},
-        scales:{
-          x:{stacked:true, grid:{display:false}, ticks:{font:{size:9}, color:'#888', maxTicksLimit:20, maxRotation:45}},
-          y:{stacked:true, grid:{color:'rgba(128,128,128,0.08)'}, ticks:{font:{size:10}, color:'#888'}}
-        }
-      }
-    });
-  }
+  // Saídas acumuladas
+  let cst=0, csc=0;
+  const cumSaiT_e   = flowTEvo.saidas.map(v=>{cst+=v;return cst;});
+  const cumSaiC_e   = flowCEvo.saidas.map(v=>{csc+=v;return csc;});
+  const cumSaiTot_e = cumSaiT_e.map((v,i)=>v+cumSaiC_e[i]);
 
-  // Ativos mensais — acumulado ancorado nos ativos reais
-  const cumCEvoRaw = buildCumulative(flowCEvo.entradas, flowCEvo.saidas);
-  const cumTEvoRaw = buildCumulative(flowTEvo.entradas, flowTEvo.saidas);
+  // Ativos acumulados ancorados nos ativos reais
   const realAtivoC_e = rawContab.filter(r=>getSituacao(r)==='ATIVO').length;
   const realAtivoT_e = rawTech.filter(r=>getSituacao(r)==='ATIVO').length;
-  const offC_e = realAtivoC_e - (cumCEvoRaw[cumCEvoRaw.length-1]||0);
-  const offT_e = realAtivoT_e - (cumTEvoRaw[cumTEvoRaw.length-1]||0);
-  const cumCEvo = cumCEvoRaw.map((v,i)=>Math.max(0,v+Math.round(offC_e*(i+1)/cumCEvoRaw.length)));
-  const cumTEvo = cumTEvoRaw.map((v,i)=>Math.max(0,v+Math.round(offT_e*(i+1)/cumTEvoRaw.length)));
-  const cumTotEvo = cumCEvo.map((v,i)=>v+cumTEvo[i]);
+  const cumAtCRaw = buildCumulative(flowCEvo.entradas, flowCEvo.saidas);
+  const cumAtTRaw = buildCumulative(flowTEvo.entradas, flowTEvo.saidas);
+  const offC_e = realAtivoC_e - (cumAtCRaw[cumAtCRaw.length-1]||0);
+  const offT_e = realAtivoT_e - (cumAtTRaw[cumAtTRaw.length-1]||0);
+  const cumAtC_e   = cumAtCRaw.map((v,i)=>Math.max(0,v+Math.round(offC_e*(i+1)/cumAtCRaw.length)));
+  const cumAtT_e   = cumAtTRaw.map((v,i)=>Math.max(0,v+Math.round(offT_e*(i+1)/cumAtTRaw.length)));
+  const cumAtTot_e = cumAtC_e.map((v,i)=>v+cumAtT_e[i]);
 
-  destroyChart('c-evo-ativos');
-  const ctxEA = document.getElementById('c-evo-ativos');
+  // Meta acumulada 2026 — só nos meses de 2026
+  const nHist = ALL_PERIODS.filter(p=>p<'2026-01').length;
+  const meta2026Full = [...Array(nHist).fill(null), ...META_ACUM_TOTAL, ...Array(Math.max(0,ALL_PERIODS.length-nHist-12)).fill(null)];
+
+  // Helper: valor do mês a partir do acumulado
+  const toMonthly = arr => arr.map((v,i)=>i===0?v:v-arr[i-1]);
+
+  destroyChart('c-evo-acumulado');
+  const ctxEA = document.getElementById('c-evo-acumulado');
   if (ctxEA) {
-    charts['c-evo-ativos'] = new Chart(ctxEA, {
+    charts['c-evo-acumulado'] = new Chart(ctxEA, {
       type: 'line',
       data: {
-        labels: evoLabelsAll,
+        labels: ALL_LABELS,
         datasets: [
-          {label:'Tech',          data:cumTEvo,   borderColor:'#0C7488', backgroundColor:'rgba(12,116,136,0.06)', borderWidth:2, pointRadius:0, pointHoverRadius:4, tension:0.3, fill:false},
-          {label:'Contabilidade', data:cumCEvo,   borderColor:'#F62642', backgroundColor:'transparent',           borderWidth:2, pointRadius:0, pointHoverRadius:4, tension:0.3, fill:false},
-          {label:'Total',         data:cumTotEvo, borderColor:'#0E1428', backgroundColor:'transparent',           borderWidth:2.5, pointRadius:0, pointHoverRadius:4, tension:0.3, fill:false},
+          // Entradas — sólidas
+          {label:'Entrada Tech',   data:cumEntT_e,   borderColor:'#91DBE4', borderWidth:1.5, pointRadius:0, pointHoverRadius:3, tension:0.3, backgroundColor:'transparent', monthly:flowTEvo.entradas},
+          {label:'Entrada Contab', data:cumEntC_e,   borderColor:'rgba(246,38,66,0.5)', borderWidth:1.5, pointRadius:0, pointHoverRadius:3, tension:0.3, backgroundColor:'transparent', monthly:flowCEvo.entradas},
+          {label:'Total Entrada',  data:cumEntTot_e, borderColor:'#0E1428', borderWidth:2.5, pointRadius:0, pointHoverRadius:4, tension:0.3, backgroundColor:'transparent', monthly:flowTEvo.entradas.map((v,i)=>v+flowCEvo.entradas[i])},
+          // Saídas — tracejadas finas
+          {label:'Saída Tech',     data:cumSaiT_e,   borderColor:'#0C7488', borderWidth:1.5, borderDash:[4,3], pointRadius:0, pointHoverRadius:3, tension:0.3, backgroundColor:'transparent', monthly:flowTEvo.saidas},
+          {label:'Saída Contab',   data:cumSaiC_e,   borderColor:'#F62642', borderWidth:1.5, borderDash:[4,3], pointRadius:0, pointHoverRadius:3, tension:0.3, backgroundColor:'transparent', monthly:flowCEvo.saidas},
+          {label:'Total Saída',    data:cumSaiTot_e, borderColor:'#657786', borderWidth:1.5, borderDash:[4,3], pointRadius:0, pointHoverRadius:3, tension:0.3, backgroundColor:'transparent', monthly:flowTEvo.saidas.map((v,i)=>v+flowCEvo.saidas[i])},
+          // Ativos — sólidas mais grossas
+          {label:'Ativos',         data:cumAtTot_e,  borderColor:'#BA7517', borderWidth:2.5, pointRadius:0, pointHoverRadius:4, tension:0.3, backgroundColor:'transparent', monthly:toMonthly(cumAtTot_e)},
+          {label:'Ativos Tech',    data:cumAtT_e,    borderColor:'#0C7488', borderWidth:2,   pointRadius:0, pointHoverRadius:3, tension:0.3, backgroundColor:'transparent', monthly:toMonthly(cumAtT_e)},
+          {label:'Ativos Contab',  data:cumAtC_e,    borderColor:'#F62642', borderWidth:2,   pointRadius:0, pointHoverRadius:3, tension:0.3, backgroundColor:'transparent', monthly:toMonthly(cumAtC_e)},
+          // Meta 2026 — pontilhada verde
+          {label:'Meta 2026',      data:meta2026Full, borderColor:'#1a7a3a', borderWidth:1.5, borderDash:[2,2], pointRadius:0, pointHoverRadius:3, tension:0.3, backgroundColor:'transparent', spanGaps:false},
         ]
       },
       options: {
         responsive:true, maintainAspectRatio:false,
         interaction:{mode:'index', intersect:false},
-        plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw}`}}},
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{label:ctx=>{
+            if(ctx.raw===null) return null;
+            if(ctx.dataset.label==='Meta 2026') return ` Meta ativos: ${ctx.raw}`;
+            const m = ctx.dataset.monthly;
+            const mes = m ? m[ctx.dataIndex] : null;
+            return ` ${ctx.dataset.label}: ${ctx.raw}${mes!=null?' (mês: '+mes+')':''}`;
+          }}}
+        },
         scales:{
           x:{grid:{display:false}, ticks:{font:{size:9}, color:'#888', maxTicksLimit:20, maxRotation:45}},
           y:{grid:{color:'rgba(128,128,128,0.08)'}, ticks:{font:{size:10}, color:'#888'}}
