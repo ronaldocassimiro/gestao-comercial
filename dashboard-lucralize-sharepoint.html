@@ -792,7 +792,7 @@ function renderGeral(fc,ft,de,ate){
   const honC=ativosC.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
   const recT=ativosT.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
   const mrr=honC+recT;
-  const filtPeriods=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS;
+  const filtPeriods=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS; window._filtPeriods=filtPeriods;
   const flowC=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,filtPeriods);
   const flowT=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,filtPeriods);
   // KPIs de entradas/saídas usam fc/ft filtrados
@@ -847,9 +847,11 @@ function renderGeral(fc,ft,de,ate){
     {label:'Meta 2026',data:metaLine,color:'#BA7517',dash:true},
   ]);
 
-  const e12C=flowC.entradas.slice(LAST12),s12C=flowC.saidas.slice(LAST12);
-  const e12T=flowT.entradas.slice(LAST12),s12T=flowT.saidas.slice(LAST12);
-  const gLabels=filtPeriods.map(p=>{const[y,m]=p.split('-');return`${m}/${y.slice(2)}`;}).slice(-12); mkFlowConsolidado('c-geral-flow',gLabels,e12C,e12T,s12C,s12T);
+  const fp=window._filtPeriods||ALL_PERIODS;
+  const fpLast12Idx=Math.max(0,fp.length-12);
+  const e12C=flowC.entradas.slice(fpLast12Idx),s12C=flowC.saidas.slice(fpLast12Idx);
+  const e12T=flowT.entradas.slice(fpLast12Idx),s12T=flowT.saidas.slice(fpLast12Idx);
+  const gLabels=(window._filtPeriods||ALL_PERIODS).slice(-12).map(p=>{const[y,m]=p.split('-');return`${m}/${y.slice(2)}`;}); mkFlowConsolidado('c-geral-flow',gLabels,e12C,e12T,s12C,s12T);
   const saldo12=e12C.map((e,i)=>(e+e12T[i])-(s12C[i]+s12T[i]));
   mkSaldoBar('c-geral-saldo',gLabels,saldo12);
   setInsight('insight-geral',saldo12);
