@@ -1082,25 +1082,27 @@ function renderTech(ft,de,ate){
   const _recReal=_ativosRealT.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
   const _metaAcumMRRT=MESES_2026.map((_,i)=>Math.round(META.mrr_tech*(i+1)/12));
   renderMVR('mvr-tech',[
-    {title:'Clientes Ativos',real:_ativosRealT.length,meta:META.ativos_tech,realFmt:_ativosRealT.length,metaFmt:META.ativos_tech,metaAcum:META_ACUM_TECH,base:rawTech.filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,'2025-12')==='ATIVO').length},
+    {title:'Clientes Ativos',real:_ativosRealT.length,meta:META.ativos_tech,realFmt:_ativosRealT.length,metaFmt:META.ativos_tech,metaAcum:META_ACUM_TECH,base:snapshotPorPeriodo(rawTech,getEntradaYM_tech,'2025-12').filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,'2025-12')==='ATIVO').length},
     {title:'MRR Tech',real:Math.round(_recReal),meta:META.mrr_tech,realFmt:fmtBRL(_recReal),metaFmt:fmtBRL(META.mrr_tech),metaAcum:_metaAcumMRRT},
     {title:'Ticket Médio',real:_ativosRealT.length?Math.round(_recReal/_ativosRealT.length):0,meta:META.ticket_tech,realFmt:'R$ '+(_ativosRealT.length?Math.round(_recReal/_ativosRealT.length):0),metaFmt:'R$ '+META.ticket_tech},
     {title:'Faturamento Anual (proj.)',real:Math.round(_recReal*12),meta:META.fat_tech,realFmt:fmtM(_recReal*12),metaFmt:fmtM(META.fat_tech)},
   ]);
 
-  const cumTRaw2=buildCumulative(flowT.entradas,flowT.saidas);
+  const flowTAll2=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,ALL_PERIODS);
+  const cumTRaw2=buildCumulative(flowTAll2.entradas,flowTAll2.saidas);
   const _realAtivoT2=rawTech.filter(r=>getSituacao(r)==='ATIVO').length;
-  const offsetT2=_realAtivoT2-(cumTRaw2[cumTRaw2.length-1]||0);
-  const cumT=cumTRaw2.map((v,i)=>Math.max(0,v+Math.round(offsetT2*(i+1)/cumTRaw2.length)));
-  const metaT=[...Array(ALL_PERIODS.length).fill(null)];
+  const _anchorIdxT2=(()=>{const n=new Date();const p=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;const i=ALL_PERIODS.indexOf(p);return i>=0?i:ALL_PERIODS.length-1;})();
+  const offsetT2=_realAtivoT2-(cumTRaw2[_anchorIdxT2]||0);
+  const cumT=cumTRaw2.map((v,i)=>{if(i===_anchorIdxT2)return _realAtivoT2;return Math.max(0,v+Math.round(offsetT2*(i+1)/_anchorIdxT2));});
   mkLineMulti('c-tech-evolucao',ALL_LABELS,[
     {label:'Ativos acumulados',data:cumT,color:'#0C7488',dash:false},
-    {label:'Entradas',data:flowT.entradas,color:'#91DBE4',bar:true},
-    {label:'Saídas',data:flowT.saidas.map(v=>-v),color:'#F62642',bar:true},
+    {label:'Entradas',data:flowTAll2.entradas,color:'#91DBE4',bar:true},
+    {label:'Saídas',data:flowTAll2.saidas.map(v=>-v),color:'#F62642',bar:true},
   ]);
 
-  const e12=flowT.entradas.slice(LAST12),s12=flowT.saidas.slice(LAST12);
-  const tLabels=filtPeriodsT.map(p=>{const[y,m]=p.split('-');return`${m}/${y.slice(2)}`;}).slice(-12); mkFlowBar('c-tech-flow',tLabels,e12,s12);
+  const fpLast12IdxT=Math.max(0,flowT.entradas.length-12);
+  const e12=flowT.entradas.slice(fpLast12IdxT),s12=flowT.saidas.slice(fpLast12IdxT);
+  const tLabels=filtPeriodsT.slice(-12).map(p=>{const[y,m]=p.split('-');return`${m}/${y.slice(2)}`;}); mkFlowBar('c-tech-flow',tLabels,e12,s12);
   mkSaldoBar('c-tech-saldo',tLabels,e12.map((e,i)=>e-s12[i]));
   setInsight('insight-tech',e12.map((e,i)=>e-s12[i]));
 
@@ -1112,10 +1114,10 @@ function renderTech(ft,de,ate){
   mkDoughnut('c-tech-status',countBy(ft,r=>capFirst(getSituacao(r))),'leg-tech-status');
   mkDoughnut('c-tech-plano',countBy(ft,r=>getPlano(r)),'leg-tech-plano');
   mkDoughnut('c-tech-regime',countBy(ft,r=>getRegime(r)),'leg-tech-regime');
-  mkDoughnut('c-tech-tipo',countBy(ft,r=>fv(r,'TipodeEntrada','Tipo_x0020_de_x0020_Entrada','Tipo de Entrada')),'leg-tech-tipo');
-  mkHBar('c-tech-motivo',topN(countBy(ft,r=>fv(r,'Motivo_x0020_da_x0020_Sa_x00ed_da','Motivo da Saída','MotivoDaSaída')),8),'#F62642');
+  mkDoughnut('c-tech-tipo',countBy(rawTech,r=>fv(r,'TipodeEntrada','Tipo_x0020_de_x0020_Entrada','Tipo de Entrada')),'leg-tech-tipo');
+  mkHBar('c-tech-motivo',topN(countBy(rawTech,r=>fv(r,'Motivo_x0020_da_x0020_Sa_x00ed_da','Motivo da Saída','MotivoDaSaída')),8),'#F62642');
   mkDoughnut('c-tech-resp',countBy(ft,r=>fv(r,'Respons_x00e1_vel_x0028_Escolha_x0029_','Respons_x00e1_vel_x0028_Escolha_','Respons_x00e1_vel','Responsável')),'leg-tech-resp');
-  mkHBar('c-tech-origem',topN(countBy(ft,r=>fv(r,'Origem')),10),'#0C7488');
+  mkHBar('c-tech-origem',topN(countBy(rawTech,r=>fv(r,'Origem')),10),'#0C7488');
   renderGeo('tech',ft);
 }
 
@@ -1149,24 +1151,27 @@ function renderContab(fc,de,ate){
   const _honReal=_ativosRealC.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
   const _metaAcumMRRC=MESES_2026.map((_,i)=>Math.round(META.mrr_contab*(i+1)/12));
   renderMVR('mvr-cont',[
-    {title:'Clientes Ativos',real:_ativosRealC.length,meta:META.ativos_contab,realFmt:_ativosRealC.length,metaFmt:META.ativos_contab,metaAcum:META_ACUM_CONTAB,base:rawContab.filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,'2025-12')==='ATIVO').length},
+    {title:'Clientes Ativos',real:_ativosRealC.length,meta:META.ativos_contab,realFmt:_ativosRealC.length,metaFmt:META.ativos_contab,metaAcum:META_ACUM_CONTAB,base:snapshotPorPeriodo(rawContab,getEntradaYM_contab,'2025-12').filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,'2025-12')==='ATIVO').length},
     {title:'MRR Contabilidade',real:Math.round(_honReal),meta:META.mrr_contab,realFmt:fmtBRL(_honReal),metaFmt:fmtBRL(META.mrr_contab),metaAcum:_metaAcumMRRC},
     {title:'Ticket Médio',real:_ativosRealC.length?Math.round(_honReal/_ativosRealC.length):0,meta:META.ticket_contab,realFmt:'R$ '+(_ativosRealC.length?Math.round(_honReal/_ativosRealC.length):0),metaFmt:'R$ '+META.ticket_contab},
     {title:'Faturamento Anual (proj.)',real:Math.round(_honReal*12),meta:META.fat_contab,realFmt:fmtM(_honReal*12),metaFmt:fmtM(META.fat_contab)},
   ]);
 
-  const cumCRaw2=buildCumulative(flowC.entradas,flowC.saidas);
+  const flowCAll2=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,ALL_PERIODS);
+  const cumCRaw2=buildCumulative(flowCAll2.entradas,flowCAll2.saidas);
   const _realAtivoC2=rawContab.filter(r=>getSituacao(r)==='ATIVO').length;
-  const offsetC2=_realAtivoC2-(cumCRaw2[cumCRaw2.length-1]||0);
-  const cumC=cumCRaw2.map((v,i)=>Math.max(0,v+Math.round(offsetC2*(i+1)/cumCRaw2.length)));
+  const _anchorIdxC2=(()=>{const n=new Date();const p=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;const i=ALL_PERIODS.indexOf(p);return i>=0?i:ALL_PERIODS.length-1;})();
+  const offsetC2=_realAtivoC2-(cumCRaw2[_anchorIdxC2]||0);
+  const cumC=cumCRaw2.map((v,i)=>{if(i===_anchorIdxC2)return _realAtivoC2;return Math.max(0,v+Math.round(offsetC2*(i+1)/_anchorIdxC2));});
   mkLineMulti('c-cont-evolucao',ALL_LABELS,[
     {label:'Ativos acumulados',data:cumC,color:'#F62642',dash:false},
-    {label:'Entradas',data:flowC.entradas,color:'#0C7488',bar:true},
-    {label:'Saídas',data:flowC.saidas.map(v=>-v),color:'#0E1428',bar:true},
+    {label:'Entradas',data:flowCAll2.entradas,color:'#0C7488',bar:true},
+    {label:'Saídas',data:flowCAll2.saidas.map(v=>-v),color:'#0E1428',bar:true},
   ]);
 
-  const e12=flowC.entradas.slice(LAST12),s12=flowC.saidas.slice(LAST12);
-  const cLabels=filtPeriodsC.map(p=>{const[y,m]=p.split('-');return`${m}/${y.slice(2)}`;}).slice(-12); mkFlowBar('c-cont-flow',cLabels,e12,s12);
+  const fpLast12IdxC=Math.max(0,flowC.entradas.length-12);
+  const e12=flowC.entradas.slice(fpLast12IdxC),s12=flowC.saidas.slice(fpLast12IdxC);
+  const cLabels=filtPeriodsC.slice(-12).map(p=>{const[y,m]=p.split('-');return`${m}/${y.slice(2)}`;}); mkFlowBar('c-cont-flow',cLabels,e12,s12);
   mkSaldoBar('c-cont-saldo',cLabels,e12.map((e,i)=>e-s12[i]));
   setInsight('insight-cont',e12.map((e,i)=>e-s12[i]));
 
@@ -1178,12 +1183,12 @@ function renderContab(fc,de,ate){
   mkDoughnut('c-cont-status',countBy(fc,r=>capFirst(getSituacao(r))),'leg-cont-status');
   mkDoughnut('c-cont-class',countBy(fc,r=>fv(r,'Classifica_x00e7__x00e3_o','Classificação','Classificacao')),'leg-cont-class');
   mkDoughnut('c-cont-regime',countBy(fc,r=>getRegime(r)),'leg-cont-regime');
-  mkDoughnut('c-cont-tipo',countBy(fc,r=>fv(r,'Tipo_x0020_de_x0020_entrada','Tipo de entrada','TipoDeEntrada')),'leg-cont-tipo');
-  mkHBar('c-cont-motivo',topN(countBy(fc,r=>fv(r,'Motivo_x0020_da_x0020_Sa_x00ed_da','Motivo da Saída','MotivoDaSaída')),8),'#F62642');
+  mkDoughnut('c-cont-tipo',countBy(rawContab,r=>fv(r,'Tipo_x0020_de_x0020_entrada','Tipo de entrada','TipoDeEntrada')),'leg-cont-tipo');
+  mkHBar('c-cont-motivo',topN(countBy(rawContab,r=>fv(r,'Motivo_x0020_da_x0020_Sa_x00ed_da','Motivo da Saída','MotivoDaSaída')),8),'#F62642');
   mkHBar('c-cont-resp',topN(countBy(fc,r=>fv(r,'Respons_x00e1_vel_x0020_Cont_x00e1_bil','Responsável Contábil','ResponsávelContábil')),8),'#91DBE4');
   mkDoughnut('c-cont-nucleo',countBy(fc,r=>fv(r,'N_x00fa_cleo','Núcleo','Nucleo')),'leg-cont-nucleo');
   mkDoughnut('c-cont-carteira',countBy(fc,r=>fv(r,'CarteiraGS_x0020_Escolha_x0029_','CarteiraGS_x0020_Escolha_x0029','Carteira GS')),'leg-cont-carteira');
-  mkHBar('c-cont-origem',topN(countBy(fc,r=>fv(r,'Origem_x0020_','Origem ','Origem')),10),'#0C7488');
+  mkHBar('c-cont-origem',topN(countBy(rawContab,r=>fv(r,'Origem_x0020_','Origem ','Origem')),10),'#0C7488');
   renderGeo('cont',fc);
 }
 
