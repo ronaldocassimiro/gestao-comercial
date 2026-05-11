@@ -483,6 +483,142 @@ function topN(obj,n){return Object.fromEntries(Object.entries(obj).filter(([k])=
 function buildFlow(arr,getE,getS,periods){return{entradas:periods.map(p=>arr.filter(r=>getE(r)===p).length),saidas:periods.map(p=>arr.filter(r=>getS(r)===p).length)};}
 function buildCumulative(entradas,saidas){let c=0;return entradas.map((e,i)=>{c+=e-saidas[i];return c;});}
 
+
+// ═══════════════════════════════════
+// ACOMPANHAMENTO MENSAL 2026
+// ═══════════════════════════════════
+const MESES_2026 = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MESES_REAIS = 5;
+const META_E_TOTAL_M  = [40,30,18,39,24,32,61,50,47,32,35,66];
+const META_E_CONTAB_M = [8,6,3,8,5,6,12,10,9,6,7,13];
+const META_E_TECH_M   = [32,24,14,32,19,26,49,40,38,26,28,53];
+const META_S_MENSAL   = [15,11,12,8,10,11,5,17,9,28,5,33];
+const META_S_CONTAB_M = [4,3,3,2,3,3,1,4,2,7,1,8];
+const META_S_TECH_M   = [11,8,9,6,7,8,4,13,7,21,4,25];
+const META_ACUM_TOTAL  = [507,526,532,563,577,598,654,687,725,729,759,792];
+const META_ACUM_CONTAB = [231,236,238,245,249,254,264,272,280,285,291,302];
+const META_ACUM_TECH   = [281,298,308,331,344,363,398,426,453,472,492,530];
+const MRR_META_C_M = [17220,12915,7585,17015,10455,13940,26240,21525,20295,13940,14965,28495];
+const MRR_META_T_M = [9576,7182,4218,9462,5814,7752,14592,11970,11286,7752,8322,15846];
+
+function buildRealMensal2026(arr, getE, getS) {
+  return {
+    entradas: MESES_2026.map((_,i) => {
+      const p = `2026-${String(i+1).padStart(2,'0')}`;
+      return arr.filter(r => getE(r) === p).length;
+    }),
+    saidas: MESES_2026.map((_,i) => {
+      const p = `2026-${String(i+1).padStart(2,'0')}`;
+      return arr.filter(r => getS(r) === p).length;
+    })
+  };
+}
+
+function buildAcumReal(inicio, entradas, saidas, nMeses) {
+  let c = inicio;
+  return entradas.map((e,i) => {
+    if (i >= nMeses) return null;
+    c += e - saidas[i];
+    return c;
+  });
+}
+
+function buildGapAcum(real, meta, nMeses) {
+  let cumReal = 0, cumMeta = 0;
+  return real.map((v,i) => {
+    if (i >= nMeses) return null;
+    cumReal += (v||0); cumMeta += (meta[i]||0);
+    return cumReal - cumMeta;
+  });
+}
+
+function renderMVRMensal(prefix, metaE, realE, metaAcum, ativosInicio, saidasReal, saidasMeta) {
+  const containerId = `mvr-mensal-${prefix}`;
+  const el = document.getElementById(containerId); if (!el) return;
+
+  const nReal = realE.filter(v=>v>0).length || MESES_REAIS;
+  const acumReal = buildAcumReal(ativosInicio, realE, saidasReal, nReal);
+  const gapE = buildGapAcum(realE, metaE, nReal);
+  const gapA = acumReal.map((v,i) => v !== null ? v - metaAcum[i] : null);
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+      <div class="card">
+        <div class="ct">Entradas — Meta vs Realizado <span class="ct-badge badge-teal">Mês a mês</span></div>
+        <div class="cw" style="height:200px"><canvas id="c-mvr-e-${prefix}" role="img" aria-label="Entradas meta vs realizado">Entradas.</canvas></div>
+        <div class="leg"><span><span class="ld" style="background:rgba(14,20,40,0.2)"></span>Meta</span><span><span class="ld" style="background:#0C7488"></span>Realizado</span></div>
+      </div>
+      <div class="card">
+        <div class="ct">Clientes Ativos — Meta vs Realizado <span class="ct-badge badge-teal">Acumulado</span></div>
+        <div class="cw" style="height:200px"><canvas id="c-mvr-a-${prefix}" role="img" aria-label="Ativos meta vs realizado">Ativos.</canvas></div>
+        <div class="leg"><span><span class="ld" style="background:#BA7517"></span>Meta</span><span><span class="ld" style="background:#0C7488"></span>Realizado</span></div>
+      </div>
+      <div class="card">
+        <div class="ct">Gap Acumulado <span class="ct-badge ${(gapE[nReal-1]||0)>=0?'badge-green':'badge-red'}">${(gapE[nReal-1]||0)>=0?'Acima da meta':'Abaixo da meta'}</span></div>
+        <div class="cw" style="height:200px"><canvas id="c-mvr-g-${prefix}" role="img" aria-label="Gap acumulado">Gap.</canvas></div>
+        <div class="leg"><span><span class="ld" style="background:#0C7488"></span>Gap entradas</span><span><span class="ld" style="background:#F62642"></span>Gap ativos</span></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px">
+      ${MESES_2026.map((m,i) => {
+        if (i >= nReal) return `<div style="background:var(--g3);border-radius:8px;padding:8px;text-align:center;opacity:.4"><div style="font-size:10px;color:var(--g1);font-weight:500">${m}/26</div><div style="font-size:10px;color:var(--g2);margin-top:4px">Aguardando</div></div>`;
+        const gE = realE[i] - metaE[i];
+        const gA = acumReal[i] !== null ? acumReal[i] - metaAcum[i] : null;
+        const cor = gE >= 0 ? '#1a7a3a' : '#F62642';
+        const bgCor = gE >= 0 ? 'rgba(26,122,58,0.06)' : 'rgba(246,38,66,0.06)';
+        return `<div style="background:${bgCor};border-radius:8px;padding:8px;text-align:center;border:1px solid ${gE>=0?'rgba(26,122,58,0.15)':'rgba(246,38,66,0.15)'}">
+          <div style="font-size:10px;font-weight:600;color:var(--g1)">${m}/26</div>
+          <div style="font-size:12px;font-weight:600;color:var(--navy);margin-top:2px">${realE[i]} <span style="font-size:10px;color:var(--g2)">/ ${metaE[i]}</span></div>
+          <div style="font-size:13px;font-weight:600;color:${cor}">${gE>=0?'+':''}${gE}</div>
+          ${gA!==null?`<div style="font-size:9px;color:var(--g2);margin-top:1px">${gA>=0?'▲':'▼'}${Math.abs(gA)} ativos</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+
+  // Chart: entradas meta vs realizado
+  destroyChart(`c-mvr-e-${prefix}`);
+  const ctx1 = document.getElementById(`c-mvr-e-${prefix}`);
+  if(ctx1) {
+    const dlTop={id:'dl',afterDatasetsDraw(chart){const ctx=chart.ctx;chart.data.datasets.forEach((ds,di)=>{if(di===0)return;const meta=chart.getDatasetMeta(di);meta.data.forEach((bar,i)=>{const val=ds.data[i];if(!val&&val!==0)return;ctx.save();ctx.font='9px Poppins,sans-serif';ctx.fillStyle='#0C7488';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(val,bar.x,bar.y-2);ctx.restore();});});}} ;
+    charts[`c-mvr-e-${prefix}`] = new Chart(ctx1, {type:'bar',plugins:[dlTop],
+      data:{labels:MESES_2026,datasets:[
+        {label:'Meta',data:metaE,backgroundColor:'rgba(14,20,40,0.12)',borderRadius:3,borderSkipped:false},
+        {label:'Realizado',data:[...realE.slice(0,nReal),...Array(12-nReal).fill(null)],backgroundColor:'#0C7488',borderRadius:3,borderSkipped:false},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:16}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw??'—'}`}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#888',autoSkip:false}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10},color:'#888'}}}}});
+  }
+
+  // Chart: ativos acumulado
+  destroyChart(`c-mvr-a-${prefix}`);
+  const ctx2 = document.getElementById(`c-mvr-a-${prefix}`);
+  if(ctx2) {
+    charts[`c-mvr-a-${prefix}`] = new Chart(ctx2, {type:'line',
+      data:{labels:MESES_2026,datasets:[
+        {label:'Meta',data:metaAcum,borderColor:'#BA7517',backgroundColor:'transparent',borderWidth:1.5,borderDash:[4,3],pointRadius:3,tension:0.3,pointBackgroundColor:'#BA7517'},
+        {label:'Realizado',data:[...acumReal.filter(v=>v!==null),...Array(12-nReal).fill(null)],borderColor:'#0C7488',backgroundColor:'rgba(12,116,136,0.08)',borderWidth:2,pointRadius:4,tension:0.3,fill:true,pointBackgroundColor:'#0C7488'},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw??'—'}`}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#888',autoSkip:false}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10},color:'#888'}}}}});
+  }
+
+  // Chart: gap acumulado
+  destroyChart(`c-mvr-g-${prefix}`);
+  const ctx3 = document.getElementById(`c-mvr-g-${prefix}`);
+  if(ctx3) {
+    const gapEf = gapE.filter(v=>v!==null);
+    const gapAf = gapA.filter(v=>v!==null);
+    charts[`c-mvr-g-${prefix}`] = new Chart(ctx3, {type:'bar',
+      data:{labels:MESES_2026.slice(0,nReal),datasets:[
+        {label:'Gap entradas',data:gapEf,backgroundColor:gapEf.map(v=>v>=0?'#0C7488':'#F62642'),borderRadius:3,borderSkipped:false},
+        {label:'Gap ativos',data:gapAf,backgroundColor:gapAf.map(v=>v>=0?'rgba(12,116,136,0.3)':'rgba(246,38,66,0.3)'),borderRadius:3,borderSkipped:false},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw>=0?'+':''}${c.raw}`}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#888',autoSkip:false}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10},color:'#888'}}}}});
+  }
+}
+
 // FILTERS
 function applyFilters(){
   const sit=(document.getElementById('f-situacao').value||'').toUpperCase();
@@ -554,7 +690,7 @@ function renderGeral(fc,ft){
   const fatAnualProj=mrr*12;
   renderMVR('mvr-geral',[
     {title:'Clientes Ativos',real:ativos,meta:META.ativos_total,realFmt:ativos,metaFmt:META.ativos_total},
-    {title:'Entradas (acum. 2026)',real:flowC.entradas.filter((_,i)=>ALL_PERIODS[i]>='2026-01').reduce((a,b)=>a+b,0)+flowT.entradas.filter((_,i)=>ALL_PERIODS[i]>='2026-01').reduce((a,b)=>a+b,0),meta:META.entradas_total,realFmt:'(aguardando 2026)',metaFmt:META.entradas_total+' contratos'},
+    {title:'Entradas (acum. 2026)',real:(() => { const rC=buildRealMensal2026(rawContab,getEntradaYM_contab,getSaidaYM_contab); const rT=buildRealMensal2026(rawTech,getEntradaYM_tech,getSaidaYM_tech); return rC.entradas.reduce((a,b)=>a+b,0)+rT.entradas.reduce((a,b)=>a+b,0); })(),meta:META.entradas_total,realFmt:(() => { const rC=buildRealMensal2026(rawContab,getEntradaYM_contab,getSaidaYM_contab); const rT=buildRealMensal2026(rawTech,getEntradaYM_tech,getSaidaYM_tech); return (rC.entradas.reduce((a,b)=>a+b,0)+rT.entradas.reduce((a,b)=>a+b,0))+' contratos'; })(),metaFmt:META.entradas_total+' contratos'},
     {title:'MRR Consolidado',real:Math.round(mrr),meta:META.mrr_contab+META.mrr_tech,realFmt:fmtBRL(mrr),metaFmt:fmtBRL(META.mrr_contab+META.mrr_tech)},
     {title:'Faturamento Anual (proj.)',real:Math.round(fatAnualProj),meta:META.fat_total,realFmt:fmtM(fatAnualProj),metaFmt:fmtM(META.fat_total)},
   ]);
@@ -592,7 +728,7 @@ function renderGeral(fc,ft){
   const realMT = buildRealMensal2026(rawTech, getEntradaYM_tech, getSaidaYM_tech);
   const realE_total = realMC.entradas.map((v,i)=>v+realMT.entradas[i]);
   const realS_total = realMC.saidas.map((v,i)=>v+realMT.saidas[i]);
-  renderMVRMensal('geral', META_E_TOTAL_M, realE_total, META_ACUM_TOTAL, ativos, realS_total, META_S_MENSAL, [17220,12915,7585,17015,10455], ativos, mrr);
+  renderMVRMensal('geral', META_E_TOTAL_M, realE_total, META_ACUM_TOTAL, ativos, realS_total, META_S_MENSAL);
 
   mkDoughnut('c-geral-receita',{'Contabilidade':Math.round(honC/1000),'Lucralize Tech':Math.round(recT/1000)},'leg-geral-receita',true);
   mkDoughnut('c-geral-status',countBy([...fc,...ft],r=>capFirst(getSituacao(r))),'leg-geral-status');
@@ -644,7 +780,7 @@ function renderTech(ft){
 
   // MVR MENSAL TECH
   const realMT2 = buildRealMensal2026(rawTech, getEntradaYM_tech, getSaidaYM_tech);
-  renderMVRMensal('tech', META_E_TECH_M, realMT2.entradas, META_ACUM_TECH, ativos.length, realMT2.saidas, META_S_TECH_M, MRR_META_T_M, ativos.length, rec);
+  renderMVRMensal('tech', META_E_TECH_M, realMT2.entradas, META_ACUM_TECH, ativos.length, realMT2.saidas, META_S_TECH_M);
 
   mkDoughnut('c-tech-status',countBy(ft,r=>capFirst(getSituacao(r))),'leg-tech-status');
   mkDoughnut('c-tech-plano',countBy(ft,r=>getPlano(r)),'leg-tech-plano');
@@ -697,7 +833,7 @@ function renderContab(fc){
 
   // MVR MENSAL CONTAB
   const realMC2 = buildRealMensal2026(rawContab, getEntradaYM_contab, getSaidaYM_contab);
-  renderMVRMensal('cont', META_E_CONTAB_M, realMC2.entradas, META_ACUM_CONTAB, ativos.length, realMC2.saidas, META_S_CONTAB_M, MRR_META_C_M, ativos.length, hon);
+  renderMVRMensal('cont', META_E_CONTAB_M, realMC2.entradas, META_ACUM_CONTAB, ativos.length, realMC2.saidas, META_S_CONTAB_M);
 
   mkDoughnut('c-cont-status',countBy(fc,r=>capFirst(getSituacao(r))),'leg-cont-status');
   mkDoughnut('c-cont-class',countBy(fc,r=>fv(r,'Classifica_x00e7__x00e3_o','Classificação','Classificacao')),'leg-cont-class');
