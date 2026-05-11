@@ -529,15 +529,22 @@ async function loadAll(){showLoading(true);hideErr();try{const me=await graphGet
 // FIELD HELPERS
 function fv(r,...keys){for(const k of keys)if(r[k]!==undefined&&r[k]!==null&&r[k]!=='')return String(r[k]);return'';}
 function getSituacao(r){return(r['Situa_x00e7__x00e3_o']||r['Situ_x00e7__x00e3_o']||r.Situacao||r['Situação']||'').toUpperCase();}
-// No snapshot de período passado, clientes que ainda não tinham saído são tratados como ATIVO
+// No snapshot de período passado:
+// - Se está ATIVO hoje e entrou até "ate" → era ATIVO
+// - Se não está ATIVO hoje mas tem data de saída > "ate" → era ATIVO naquele mês
+// - Se não está ATIVO hoje e saída <= "ate" ou sem saída → mantém status atual
 function getSituacaoSnapshot(r, getS, ate) {
   const now = new Date();
   const currentPeriod = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   if (!ate || ate === '9999-12' || ate >= currentPeriod) return getSituacao(r);
+  const situacaoAtual = getSituacao(r);
   const saida = getS(r);
-  // Se não tem data de saída ou saiu depois do período → era ATIVO naquele mês
-  if (!saida || saida > ate) return 'ATIVO';
-  return getSituacao(r);
+  // Está ativo hoje → era ativo naquele mês também (entrou antes, ainda não saiu)
+  if (situacaoAtual === 'ATIVO') return 'ATIVO';
+  // Não está ativo hoje mas saiu DEPOIS do período → era ATIVO naquele mês
+  if (saida && saida > ate) return 'ATIVO';
+  // Saiu antes ou no período → mantém status atual (inativo, baixada etc.)
+  return situacaoAtual;
 }
 function getRegime(r){return fv(r,'Regime_x0020_Tribut_x00e1_rio_x0020_Ano_x0020_Atual','RegimeTributarioAnoAtual','RegimeTribut_x00e1_rioAnoAtual');}
 function safeYM(val){if(!val)return null;const s=String(val).trim();if(s.includes('/')){const p=s.split('/');if(p.length===2&&p[1].length===4)return`${p[1]}-${p[0].padStart(2,'0')}`;}if(s.match(/^\d{4}-\d{2}/))return s.substring(0,7);return null;}
@@ -776,22 +783,17 @@ const MRR_TOTAL_H = [68493,70719,74429,81107,81849,84817,84817,87785,95205,99886
 // SAÍDAS 2026 META
 
 // SNAPSHOT POR PERÍODO
-// Reconstrói a base como estava no mês "ate":
-// - entrou antes ou no mês "ate"
-// - não saiu antes do mês "ate" (saída > ate OU sem data de saída)
-function snapshotPorPeriodo(arr, getE, getS, ate) {
+// Filtra a base para incluir apenas quem havia entrado até o mês "ate"
+// Mantém todos os registros (inclusive quem saiu) para calcular saídas corretamente
+function snapshotPorPeriodo(arr, getE, ate) {
   const now = new Date();
   const currentPeriod = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  // Se ate é o mês atual ou futuro, não filtra — usa dados reais do SharePoint
+  // Se ate é o mês atual ou futuro, não filtra
   if (!ate || ate === '9999-12' || ate >= currentPeriod) return arr;
   return arr.filter(r => {
     const entrada = getE(r);
-    const saida = getS(r);
-    // Deve ter entrado até o mês selecionado
-    if (!entrada || entrada > ate) return false;
-    // Não deve ter saído antes do mês selecionado
-    if (saida && saida <= ate) return false;
-    return true;
+    // Inclui apenas quem já havia entrado até o mês selecionado
+    return entrada && entrada <= ate;
   });
 }
 
@@ -801,10 +803,10 @@ function applyFilters(){
   const reg=document.getElementById('f-regime').value||'';
   const de=document.getElementById('f-de')?.value||'';
   const ate=document.getElementById('f-ate')?.value||'9999-12';
-  // Aplica snapshot por período antes dos demais filtros
-  let fc=snapshotPorPeriodo(rawContab,getEntradaYM_contab,getSaidaYM_contab,ate);
-  let ft=snapshotPorPeriodo(rawTech,getEntradaYM_tech,getSaidaYM_tech,ate);
-  if(sit){fc=fc.filter(r=>getSituacao(r)===sit);ft=ft.filter(r=>getSituacao(r)===sit);}
+  // Filtra por quem havia entrado até o mês "ate" (mantém saídas para cálculo correto)
+  let fc=snapshotPorPeriodo(rawContab,getEntradaYM_contab,ate);
+  let ft=snapshotPorPeriodo(rawTech,getEntradaYM_tech,ate);
+  if(sit){fc=fc.filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,ate)===sit);ft=ft.filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,ate)===sit);}
   if(reg){fc=fc.filter(r=>getRegime(r).includes(reg));ft=ft.filter(r=>getRegime(r).includes(reg));}
   renderGeral(fc,ft,de,ate);renderTech(ft,de,ate);renderContab(fc,de,ate);
 }
