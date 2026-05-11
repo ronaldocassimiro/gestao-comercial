@@ -227,8 +227,10 @@ main{max-width:1400px;margin:0 auto;padding:18px}
         <div class="leg">
           <span><span class="ld" style="background:#0C7488"></span>Tech</span>
           <span><span class="ld" style="background:#F62642"></span>Contabilidade</span>
-          <span><span class="ld" style="background:#0E1428"></span>Total</span>
-          <span><span class="ld" style="background:#BA7517;opacity:.5"></span>Meta 2026</span>
+          <span><span class="ld" style="background:#0E1428"></span>Total Entradas</span>
+          <span><span class="ld" style="background:#657786;opacity:.6"></span>Saídas Acum.</span>
+          <span><span class="ld" style="background:#BA7517"></span>Ativos</span>
+          <span><span class="ld" style="background:#1a7a3a;opacity:.7"></span>Meta 2026</span>
         </div>
       </div>
 
@@ -527,6 +529,16 @@ async function loadAll(){showLoading(true);hideErr();try{const me=await graphGet
 // FIELD HELPERS
 function fv(r,...keys){for(const k of keys)if(r[k]!==undefined&&r[k]!==null&&r[k]!=='')return String(r[k]);return'';}
 function getSituacao(r){return(r['Situa_x00e7__x00e3_o']||r['Situ_x00e7__x00e3_o']||r.Situacao||r['Situação']||'').toUpperCase();}
+// No snapshot de período passado, clientes que ainda não tinham saído são tratados como ATIVO
+function getSituacaoSnapshot(r, getS, ate) {
+  const now = new Date();
+  const currentPeriod = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  if (!ate || ate === '9999-12' || ate >= currentPeriod) return getSituacao(r);
+  const saida = getS(r);
+  // Se não tem data de saída ou saiu depois do período → era ATIVO naquele mês
+  if (!saida || saida > ate) return 'ATIVO';
+  return getSituacao(r);
+}
 function getRegime(r){return fv(r,'Regime_x0020_Tribut_x00e1_rio_x0020_Ano_x0020_Atual','RegimeTributarioAnoAtual','RegimeTribut_x00e1_rioAnoAtual');}
 function safeYM(val){if(!val)return null;const s=String(val).trim();if(s.includes('/')){const p=s.split('/');if(p.length===2&&p[1].length===4)return`${p[1]}-${p[0].padStart(2,'0')}`;}if(s.match(/^\d{4}-\d{2}/))return s.substring(0,7);return null;}
 function getEntradaYM_contab(r){const v=fv(r,'DatadoContrato','Data_x0020_do_x0020_Contrato','DataDoContrato');if(!v)return null;try{const d=new Date(v);if(!isNaN(d))return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}catch{}return safeYM(v);}
@@ -763,13 +775,35 @@ const MRR_TOTAL_H = [68493,70719,74429,81107,81849,84817,84817,87785,95205,99886
 
 // SAÍDAS 2026 META
 
+// SNAPSHOT POR PERÍODO
+// Reconstrói a base como estava no mês "ate":
+// - entrou antes ou no mês "ate"
+// - não saiu antes do mês "ate" (saída > ate OU sem data de saída)
+function snapshotPorPeriodo(arr, getE, getS, ate) {
+  const now = new Date();
+  const currentPeriod = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  // Se ate é o mês atual ou futuro, não filtra — usa dados reais do SharePoint
+  if (!ate || ate === '9999-12' || ate >= currentPeriod) return arr;
+  return arr.filter(r => {
+    const entrada = getE(r);
+    const saida = getS(r);
+    // Deve ter entrado até o mês selecionado
+    if (!entrada || entrada > ate) return false;
+    // Não deve ter saído antes do mês selecionado
+    if (saida && saida <= ate) return false;
+    return true;
+  });
+}
+
 // FILTERS
 function applyFilters(){
   const sit=(document.getElementById('f-situacao').value||'').toUpperCase();
   const reg=document.getElementById('f-regime').value||'';
   const de=document.getElementById('f-de')?.value||'';
   const ate=document.getElementById('f-ate')?.value||'9999-12';
-  let fc=rawContab,ft=rawTech;
+  // Aplica snapshot por período antes dos demais filtros
+  let fc=snapshotPorPeriodo(rawContab,getEntradaYM_contab,getSaidaYM_contab,ate);
+  let ft=snapshotPorPeriodo(rawTech,getEntradaYM_tech,getSaidaYM_tech,ate);
   if(sit){fc=fc.filter(r=>getSituacao(r)===sit);ft=ft.filter(r=>getSituacao(r)===sit);}
   if(reg){fc=fc.filter(r=>getRegime(r).includes(reg));ft=ft.filter(r=>getRegime(r).includes(reg));}
   renderGeral(fc,ft,de,ate);renderTech(ft,de,ate);renderContab(fc,de,ate);
@@ -808,8 +842,8 @@ function renderMVR(containerId, items) {
 
 // RENDER GERAL
 function renderGeral(fc,ft,de,ate){
-  const ativosC=fc.filter(r=>getSituacao(r)==='ATIVO');
-  const ativosT=ft.filter(r=>getSituacao(r)==='ATIVO');
+  const ativosC=fc.filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,ate)==='ATIVO');
+  const ativosT=ft.filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,ate)==='ATIVO');
   const total=fc.length+ft.length, ativos=ativosC.length+ativosT.length;
   const honC=ativosC.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
   const recT=ativosT.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
@@ -817,18 +851,19 @@ function renderGeral(fc,ft,de,ate){
   const filtPeriods=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS; window._filtPeriods=filtPeriods;
   const flowC=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,filtPeriods);
   const flowT=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,filtPeriods);
-  // KPI "Entradas/Saídas" sempre usa o mês anterior ao mês atual real
+  // KPI "Entradas/Saídas" usa o mês anterior ao "Até" selecionado (ou mês anterior ao atual se não houver filtro)
+  const _ateVal = ate && ate !== '9999-12' ? ate : null;
   const _now=new Date();
-  const _prevDate=new Date(_now.getFullYear(),_now.getMonth()-1,1);
-  const prevRealPeriod=`${_prevDate.getFullYear()}-${String(_prevDate.getMonth()+1).padStart(2,'0')}`;
-  const lastPeriod = prevRealPeriod;
+  const _lastPeriodBase = _ateVal || `${_now.getFullYear()}-${String(_now.getMonth()+1).padStart(2,'0')}`;
+  const _lpDate = new Date(parseInt(_lastPeriodBase.split('-')[0]), parseInt(_lastPeriodBase.split('-')[1])-2, 1);
+  const lastPeriod = `${_lpDate.getFullYear()}-${String(_lpDate.getMonth()+1).padStart(2,'0')}`;
   const lastE = fc.filter(r=>getEntradaYM_contab(r)===lastPeriod).length + ft.filter(r=>getEntradaYM_tech(r)===lastPeriod).length;
   const lastS = fc.filter(r=>getSaidaYM_contab(r)===lastPeriod).length + ft.filter(r=>getSaidaYM_tech(r)===lastPeriod).length;
   // Entradas acumuladas 2026 com filtro
   const periodos2026=filtPeriods.filter(p=>p>='2026-01');
   const entradas2026Acum = periodos2026.reduce((sum,p) => sum + fc.filter(r=>getEntradaYM_contab(r)===p).length + ft.filter(r=>getEntradaYM_tech(r)===p).length, 0);
-  const inativos=fc.filter(r=>getSituacao(r)==='INATIVO').length+ft.filter(r=>getSituacao(r)==='INATIVO').length;
-  const baixadas=fc.filter(r=>getSituacao(r)==='BAIXADA').length+ft.filter(r=>getSituacao(r)==='BAIXADA').length;
+  const inativos=fc.filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,ate)==='INATIVO').length+ft.filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,ate)==='INATIVO').length;
+  const baixadas=fc.filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,ate)==='BAIXADA').length+ft.filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,ate)==='BAIXADA').length;
 
   renderKPIs('kpi-geral',[
     {label:'Total de Clientes',value:total,sub:'Contab + Tech'},
@@ -891,11 +926,23 @@ function renderGeral(fc,ft,de,ate){
     return metaAcum[mi]??null;
   });
 
+  // Saídas acumuladas (para exibir no gráfico de evolução)
+  const flowCAllS=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,ALL_PERIODS);
+  const flowTAllS=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,ALL_PERIODS);
+  let _cs=0;
+  const cumSaidasAll=ALL_PERIODS.map((_,i)=>{_cs+=flowCAllS.saidas[i]+flowTAllS.saidas[i];return _cs;});
+  const cumSaidasSlice=cumSaidasAll.slice(evoS,evoE+1);
+
+  // Ativos reais = Total acumulado - Saídas acumuladas, ancorado nos ativos reais
+  const cumAtivosReal=cumTotalComMeta.map((v,i)=>v!==null&&cumSaidasSlice[i]!==undefined?v-cumSaidasSlice[i]:null);
+
   mkLineMulti('c-geral-evolucao',labelsComMeta,[
     {label:'Tech',data:cumTComMeta,color:'#0C7488',dash:false},
     {label:'Contabilidade',data:cumCComMeta,color:'#F62642',dash:false},
-    {label:'Total',data:cumTotalComMeta,color:'#0E1428',dash:false},
-    {label:'Meta 2026',data:metaLine,color:'#BA7517',dash:true},
+    {label:'Total Entradas',data:cumTotalComMeta,color:'#0E1428',dash:false},
+    {label:'Saídas Acum.',data:cumSaidasSlice,color:'#657786',dash:true},
+    {label:'Ativos',data:cumAtivosReal,color:'#BA7517',dash:false},
+    {label:'Meta 2026',data:metaLine,color:'#1a7a3a',dash:true},
   ]);
 
   const fp=window._filtPeriods||ALL_PERIODS;
@@ -924,15 +971,17 @@ function renderGeral(fc,ft,de,ate){
 }
 
 function renderTech(ft,de,ate){
-  const ativos=ft.filter(r=>getSituacao(r)==='ATIVO');
+  const ativos=ft.filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,ate)==='ATIVO');
   const rec=ativos.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
-  const inativos=ft.filter(r=>getSituacao(r)==='INATIVO').length;
-  const baixadas=ft.filter(r=>getSituacao(r)==='BAIXADA').length;
+  const inativos=ft.filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,ate)==='INATIVO').length;
+  const baixadas=ft.filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,ate)==='BAIXADA').length;
   const filtPeriodsT=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS;
   const flowT=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,filtPeriodsT);
+  const _ateValT = ate && ate !== '9999-12' ? ate : null;
   const _nowT=new Date();
-  const _prevDateT=new Date(_nowT.getFullYear(),_nowT.getMonth()-1,1);
-  const lastPeriodT=`${_prevDateT.getFullYear()}-${String(_prevDateT.getMonth()+1).padStart(2,'0')}`;
+  const _lastPeriodBaseT = _ateValT || `${_nowT.getFullYear()}-${String(_nowT.getMonth()+1).padStart(2,'0')}`;
+  const _lpDateT = new Date(parseInt(_lastPeriodBaseT.split('-')[0]), parseInt(_lastPeriodBaseT.split('-')[1])-2, 1);
+  const lastPeriodT=`${_lpDateT.getFullYear()}-${String(_lpDateT.getMonth()+1).padStart(2,'0')}`;
   const lastE = ft.filter(r=>getEntradaYM_tech(r)===lastPeriodT).length;
   const lastS = ft.filter(r=>getSaidaYM_tech(r)===lastPeriodT).length;
 
@@ -984,15 +1033,17 @@ function renderTech(ft,de,ate){
 }
 
 function renderContab(fc,de,ate){
-  const ativos=fc.filter(r=>getSituacao(r)==='ATIVO');
+  const ativos=fc.filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,ate)==='ATIVO');
   const hon=ativos.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
-  const inativos=fc.filter(r=>getSituacao(r)==='INATIVO').length;
-  const baixadas=fc.filter(r=>getSituacao(r)==='BAIXADA').length;
+  const inativos=fc.filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,ate)==='INATIVO').length;
+  const baixadas=fc.filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,ate)==='BAIXADA').length;
   const filtPeriodsC=de?ALL_PERIODS.filter(p=>p>=de&&p<=(ate||'9999')):ALL_PERIODS;
   const flowC=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,filtPeriodsC);
+  const _ateValC = ate && ate !== '9999-12' ? ate : null;
   const _nowC=new Date();
-  const _prevDateC=new Date(_nowC.getFullYear(),_nowC.getMonth()-1,1);
-  const lastPeriodC=`${_prevDateC.getFullYear()}-${String(_prevDateC.getMonth()+1).padStart(2,'0')}`;
+  const _lastPeriodBaseC = _ateValC || `${_nowC.getFullYear()}-${String(_nowC.getMonth()+1).padStart(2,'0')}`;
+  const _lpDateC = new Date(parseInt(_lastPeriodBaseC.split('-')[0]), parseInt(_lastPeriodBaseC.split('-')[1])-2, 1);
+  const lastPeriodC=`${_lpDateC.getFullYear()}-${String(_lpDateC.getMonth()+1).padStart(2,'0')}`;
   const lastE = fc.filter(r=>getEntradaYM_contab(r)===lastPeriodC).length;
   const lastS = fc.filter(r=>getSaidaYM_contab(r)===lastPeriodC).length;
 
