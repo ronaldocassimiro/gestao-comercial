@@ -971,12 +971,13 @@ function renderGeral(fc,ft,de,ate){
   mkSaldoBar('c-geral-saldo',gLabels,saldo12);
   setInsight('insight-geral',saldo12);
 
-  // MVR MENSAL GERAL
+  // MVR MENSAL GERAL — usa sempre ativos reais de hoje como ponto de partida
   const realMC = buildRealMensal2026(rawContab, getEntradaYM_contab, getSaidaYM_contab);
   const realMT = buildRealMensal2026(rawTech, getEntradaYM_tech, getSaidaYM_tech);
   const realE_total = realMC.entradas.map((v,i)=>v+realMT.entradas[i]);
   const realS_total = realMC.saidas.map((v,i)=>v+realMT.saidas[i]);
-  renderMVRMensal('geral', META_E_TOTAL_M, realE_total, META_ACUM_TOTAL, ativos, realS_total, META_S_MENSAL);
+  const ativosRealHoje = rawContab.filter(r=>getSituacao(r)==='ATIVO').length + rawTech.filter(r=>getSituacao(r)==='ATIVO').length;
+  renderMVRMensal('geral', META_E_TOTAL_M, realE_total, META_ACUM_TOTAL, ativosRealHoje, realS_total, META_S_MENSAL);
 
   renderMRRCharts(de, ate);
   mkDoughnut('c-geral-receita',{'Contabilidade':Math.round(honC/1000),'Lucralize Tech':Math.round(recT/1000)},'leg-geral-receita',true);
@@ -1035,9 +1036,10 @@ function renderTech(ft,de,ate){
   mkSaldoBar('c-tech-saldo',tLabels,e12.map((e,i)=>e-s12[i]));
   setInsight('insight-tech',e12.map((e,i)=>e-s12[i]));
 
-  // MVR MENSAL TECH
+  // MVR MENSAL TECH — usa sempre ativos reais de hoje como ponto de partida
   const realMT2 = buildRealMensal2026(rawTech, getEntradaYM_tech, getSaidaYM_tech);
-  renderMVRMensal('tech', META_E_TECH_M, realMT2.entradas, META_ACUM_TECH, ativos.length, realMT2.saidas, META_S_TECH_M);
+  const ativosRealHojeT = rawTech.filter(r=>getSituacao(r)==='ATIVO').length;
+  renderMVRMensal('tech', META_E_TECH_M, realMT2.entradas, META_ACUM_TECH, ativosRealHojeT, realMT2.saidas, META_S_TECH_M);
 
   mkDoughnut('c-tech-status',countBy(ft,r=>capFirst(getSituacao(r))),'leg-tech-status');
   mkDoughnut('c-tech-plano',countBy(ft,r=>getPlano(r)),'leg-tech-plano');
@@ -1096,9 +1098,10 @@ function renderContab(fc,de,ate){
   mkSaldoBar('c-cont-saldo',cLabels,e12.map((e,i)=>e-s12[i]));
   setInsight('insight-cont',e12.map((e,i)=>e-s12[i]));
 
-  // MVR MENSAL CONTAB
+  // MVR MENSAL CONTAB — usa sempre ativos reais de hoje como ponto de partida
   const realMC2 = buildRealMensal2026(rawContab, getEntradaYM_contab, getSaidaYM_contab);
-  renderMVRMensal('cont', META_E_CONTAB_M, realMC2.entradas, META_ACUM_CONTAB, ativos.length, realMC2.saidas, META_S_CONTAB_M);
+  const ativosRealHojeC = rawContab.filter(r=>getSituacao(r)==='ATIVO').length;
+  renderMVRMensal('cont', META_E_CONTAB_M, realMC2.entradas, META_ACUM_CONTAB, ativosRealHojeC, realMC2.saidas, META_S_CONTAB_M);
 
   mkDoughnut('c-cont-status',countBy(fc,r=>capFirst(getSituacao(r))),'leg-cont-status');
   mkDoughnut('c-cont-class',countBy(fc,r=>fv(r,'Classifica_x00e7__x00e3_o','Classificação','Classificacao')),'leg-cont-class');
