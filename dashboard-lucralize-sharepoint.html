@@ -823,9 +823,14 @@ function pctColor(p){return p>=100?'#1a7a3a':p>=70?'#BA7517':'#F62642';}
 // META VS REALIZADO WIDGET
 function renderMVR(containerId, items) {
   const el=document.getElementById(containerId); if(!el) return;
+  // Calcula % ideal baseado na meta acumulada do mês atual
+  const _mesAtual = new Date().getMonth(); // 0=Jan ... 11=Dez
   el.innerHTML=items.map(item=>{
     const p=pct(item.real,item.meta);
     const cor=pctColor(p);
+    // % ideal = meta acumulada até mês atual / meta anual total
+    const metaIdeal = item.metaAcum ? Math.round(item.metaAcum[_mesAtual]/item.meta*100) : Math.round((_mesAtual+1)/12*100);
+    const corIdeal='#AAB8C2';
     return`<div class="mvr-card">
       <div class="mvr-title">${item.title}</div>
       <div class="mvr-row">
@@ -837,8 +842,18 @@ function renderMVR(containerId, items) {
         <span class="mvr-meta">${item.metaFmt}</span>
       </div>
       <div class="progress-wrap">
-        <div class="progress-bar"><div class="progress-fill" style="width:${p}%;background:${cor}"></div></div>
-        <div class="progress-pct" style="color:${cor}">${p}% da meta atingida</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:${p}%;background:${cor}"></div></div>
+          <span style="font-size:10px;color:${cor};min-width:32px;text-align:right">${p}%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:${metaIdeal}%;background:${corIdeal}"></div></div>
+          <span style="font-size:10px;color:${corIdeal};min-width:32px;text-align:right">${metaIdeal}%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px">
+          <span style="color:${cor}">● Realizado</span>
+          <span style="color:${corIdeal}">● Ideal até ${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][_mesAtual]}</span>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -890,10 +905,15 @@ function renderGeral(fc,ft,de,ate){
   const _entradas2026Real=ALL_PERIODS.filter(p=>p>='2026-01').reduce((sum,p)=>
     sum+rawContab.filter(r=>getEntradaYM_contab(r)===p).length+rawTech.filter(r=>getEntradaYM_tech(r)===p).length,0);
   const fatAnualProj=_mrrReal*12;
+  // Meta acumulada entradas geral
+  let _cumMetaEG=0; const _metaAcumEG=META_E_TOTAL_M.map(v=>{_cumMetaEG+=v;return _cumMetaEG;});
+  // Meta acumulada MRR geral (MRR alvo = meta anual / 12 proporcional)
+  const _mrrMetaTotal=META.mrr_contab+META.mrr_tech;
+  const _metaAcumMRR=MESES_2026.map((_,i)=>Math.round(_mrrMetaTotal*(i+1)/12));
   renderMVR('mvr-geral',[
-    {title:'Clientes Ativos',real:_ativosRealG,meta:META.ativos_total,realFmt:_ativosRealG,metaFmt:META.ativos_total},
-    {title:'Entradas (acum. 2026)',real:_entradas2026Real,meta:META.entradas_total,realFmt:_entradas2026Real+' contratos',metaFmt:META.entradas_total+' contratos'},
-    {title:'MRR Consolidado',real:Math.round(_mrrReal),meta:META.mrr_contab+META.mrr_tech,realFmt:fmtBRL(_mrrReal),metaFmt:fmtBRL(META.mrr_contab+META.mrr_tech)},
+    {title:'Clientes Ativos',real:_ativosRealG,meta:META.ativos_total,realFmt:_ativosRealG,metaFmt:META.ativos_total,metaAcum:META_ACUM_TOTAL},
+    {title:'Entradas (acum. 2026)',real:_entradas2026Real,meta:META.entradas_total,realFmt:_entradas2026Real+' contratos',metaFmt:META.entradas_total+' contratos',metaAcum:_metaAcumEG},
+    {title:'MRR Consolidado',real:Math.round(_mrrReal),meta:_mrrMetaTotal,realFmt:fmtBRL(_mrrReal),metaFmt:fmtBRL(_mrrMetaTotal),metaAcum:_metaAcumMRR},
     {title:'Faturamento Anual (proj.)',real:Math.round(fatAnualProj),meta:META.fat_total,realFmt:fmtM(fatAnualProj),metaFmt:fmtM(META.fat_total)},
   ]);
 
@@ -1033,9 +1053,10 @@ function renderTech(ft,de,ate){
 
   const _ativosRealT=rawTech.filter(r=>getSituacao(r)==='ATIVO');
   const _recReal=_ativosRealT.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
+  const _metaAcumMRRT=MESES_2026.map((_,i)=>Math.round(META.mrr_tech*(i+1)/12));
   renderMVR('mvr-tech',[
-    {title:'Clientes Ativos',real:_ativosRealT.length,meta:META.ativos_tech,realFmt:_ativosRealT.length,metaFmt:META.ativos_tech},
-    {title:'MRR Tech',real:Math.round(_recReal),meta:META.mrr_tech,realFmt:fmtBRL(_recReal),metaFmt:fmtBRL(META.mrr_tech)},
+    {title:'Clientes Ativos',real:_ativosRealT.length,meta:META.ativos_tech,realFmt:_ativosRealT.length,metaFmt:META.ativos_tech,metaAcum:META_ACUM_TECH},
+    {title:'MRR Tech',real:Math.round(_recReal),meta:META.mrr_tech,realFmt:fmtBRL(_recReal),metaFmt:fmtBRL(META.mrr_tech),metaAcum:_metaAcumMRRT},
     {title:'Ticket Médio',real:_ativosRealT.length?Math.round(_recReal/_ativosRealT.length):0,meta:META.ticket_tech,realFmt:'R$ '+(_ativosRealT.length?Math.round(_recReal/_ativosRealT.length):0),metaFmt:'R$ '+META.ticket_tech},
     {title:'Faturamento Anual (proj.)',real:Math.round(_recReal*12),meta:META.fat_tech,realFmt:fmtM(_recReal*12),metaFmt:fmtM(META.fat_tech)},
   ]);
@@ -1099,9 +1120,10 @@ function renderContab(fc,de,ate){
 
   const _ativosRealC=rawContab.filter(r=>getSituacao(r)==='ATIVO');
   const _honReal=_ativosRealC.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
+  const _metaAcumMRRC=MESES_2026.map((_,i)=>Math.round(META.mrr_contab*(i+1)/12));
   renderMVR('mvr-cont',[
     {title:'Clientes Ativos',real:_ativosRealC.length,meta:META.ativos_contab,realFmt:_ativosRealC.length,metaFmt:META.ativos_contab},
-    {title:'MRR Contabilidade',real:Math.round(_honReal),meta:META.mrr_contab,realFmt:fmtBRL(_honReal),metaFmt:fmtBRL(META.mrr_contab)},
+    {title:'MRR Contabilidade',real:Math.round(_honReal),meta:META.mrr_contab,realFmt:fmtBRL(_honReal),metaFmt:fmtBRL(META.mrr_contab),metaAcum:_metaAcumMRRC},
     {title:'Ticket Médio',real:_ativosRealC.length?Math.round(_honReal/_ativosRealC.length):0,meta:META.ticket_contab,realFmt:'R$ '+(_ativosRealC.length?Math.round(_honReal/_ativosRealC.length):0),metaFmt:'R$ '+META.ticket_contab},
     {title:'Faturamento Anual (proj.)',real:Math.round(_honReal*12),meta:META.fat_contab,realFmt:fmtM(_honReal*12),metaFmt:fmtM(META.fat_contab)},
   ]);
