@@ -8,14 +8,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--navy:#0E1428;--navy2:#181F26;--teal:#0C7488;--teal-l:#91DBE4;--red:#F62642;--g1:#657786;--g2:#AAB8C2;--g3:#EBF0F3;--white:#fff}
+:root{--navy:#0E1428;--navy2:#181F26;--teal:#0C7488;--teal-l:#91DBE4;--red:#F62642;--g1:#657786;--g2:#AAB8C2;--g3:#EBF0F3;--white:#fff;--green:#1a7a3a;--amber:#BA7517}
 body{font-family:'Poppins',system-ui,sans-serif;background:var(--g3);color:var(--navy);font-size:13px;min-height:100vh}
 
 /* LOGIN */
 #login-screen{min-height:100vh;background:var(--navy);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px}
 .login-card{background:var(--navy2);border:1px solid rgba(145,219,228,0.15);border-radius:16px;padding:44px 52px;text-align:center;max-width:400px;width:90%}
-.login-logo .brand-name{font-family:'Comfortaa',cursive;font-size:30px;color:var(--teal-l)}
-.login-logo .brand-sub{font-size:11px;color:var(--g2);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.brand-name{font-family:'Comfortaa',cursive;font-size:30px;color:var(--teal-l)}
+.brand-sub{font-size:11px;color:var(--g2);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
 .login-title{font-family:'Comfortaa',cursive;font-size:18px;color:var(--white);margin:20px 0 8px}
 .login-desc{font-size:12px;color:var(--g2);line-height:1.6;margin-bottom:28px}
 .btn-login{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px 20px;background:var(--teal);color:var(--white);border:none;border-radius:10px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:background .2s}
@@ -34,61 +34,91 @@ header{background:var(--navy);border-bottom:3px solid var(--teal);padding:0 24px
 .logo-mod{font-size:11px;color:var(--g2);letter-spacing:1px}
 .hdr-right{display:flex;align-items:center;gap:12px}
 .last-upd{font-size:11px;color:var(--g2)}
-#btn-refresh{background:rgba(145,219,228,0.1);border:1px solid rgba(145,219,228,0.25);color:var(--teal-l);border-radius:7px;padding:5px 12px;font-size:11px;font-family:'Poppins',sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .2s}
+#btn-refresh{background:rgba(145,219,228,0.1);border:1px solid rgba(145,219,228,0.25);color:var(--teal-l);border-radius:7px;padding:5px 12px;font-size:11px;font-family:'Poppins',sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px}
 #btn-refresh:hover{background:rgba(145,219,228,0.2)}
 .user-pill{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.07);border-radius:20px;padding:4px 10px 4px 4px}
 .user-av{width:26px;height:26px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff}
 .user-nm{font-size:11px;color:var(--g2)}
-#btn-logout{background:none;border:none;color:var(--g2);font-size:11px;cursor:pointer;padding:3px 7px;border-radius:5px;transition:color .2s}
+#btn-logout{background:none;border:none;color:var(--g2);font-size:11px;cursor:pointer;padding:3px 7px;border-radius:5px}
 #btn-logout:hover{color:var(--red)}
 
 /* TABS */
-.tabs{display:flex;gap:3px;padding:0 24px;background:var(--navy)}
-.tab-btn{font-family:'Poppins',sans-serif;font-size:12px;font-weight:500;color:var(--g2);background:none;border:none;padding:8px 18px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-3px;transition:all .15s;border-radius:5px 5px 0 0}
+.tabs{display:flex;gap:3px;padding:0 24px;background:var(--navy);overflow-x:auto}
+.tab-btn{font-family:'Poppins',sans-serif;font-size:12px;font-weight:500;color:var(--g2);background:none;border:none;padding:8px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-3px;transition:all .15s;white-space:nowrap}
 .tab-btn:hover{color:var(--teal-l)}
 .tab-btn.active{color:var(--teal-l);border-bottom-color:var(--teal-l)}
 
 /* FILTERS */
 .filters-bar{background:var(--white);border-bottom:1px solid var(--g3);padding:10px 24px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
 .filters-bar label{font-size:11px;font-weight:600;color:var(--g1);text-transform:uppercase;letter-spacing:.04em}
-.filters-bar select{background:var(--white);border:1px solid var(--g2);border-radius:7px;padding:5px 10px;font-size:12px;font-family:'Poppins',sans-serif;color:var(--navy);cursor:pointer;outline:none;transition:border-color .2s}
+.filters-bar select{background:var(--white);border:1px solid var(--g2);border-radius:7px;padding:5px 10px;font-size:12px;font-family:'Poppins',sans-serif;color:var(--navy);cursor:pointer;outline:none}
 .filters-bar select:focus{border-color:var(--teal)}
-.btn-clear{background:none;border:1px solid var(--g2);border-radius:7px;padding:5px 12px;font-size:11px;font-family:'Poppins',sans-serif;color:var(--g1);cursor:pointer;transition:all .2s}
+.btn-clear{background:none;border:1px solid var(--g2);border-radius:7px;padding:5px 12px;font-size:11px;font-family:'Poppins',sans-serif;color:var(--g1);cursor:pointer}
 .btn-clear:hover{border-color:var(--red);color:var(--red)}
 
 /* MAIN */
 main{max-width:1400px;margin:0 auto;padding:18px}
 .section{display:none}.section.on{display:flex;flex-direction:column;gap:14px}
+.sec-title{font-size:11px;font-weight:600;color:var(--teal);padding:3px 0 5px;border-bottom:1.5px solid var(--teal);text-transform:uppercase;letter-spacing:.06em}
 
-/* SECTION TITLE */
-.sec-title{font-size:11px;font-weight:600;color:var(--teal);padding:3px 0 5px;border-bottom:1.5px solid var(--teal);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
-
-/* KPI GRID */
+/* KPIs */
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .kpi{background:var(--white);border-radius:10px;padding:13px 15px;border:1px solid rgba(0,0,0,0.06);border-top:3px solid var(--teal);box-shadow:0 1px 3px rgba(0,0,0,0.04)}
-.kpi.r{border-top-color:var(--red)}.kpi.tl{border-top-color:var(--teal-l)}.kpi.nv{border-top-color:var(--navy)}.kpi.am{border-top-color:#BA7517}
+.kpi.r{border-top-color:var(--red)}.kpi.tl{border-top-color:var(--teal-l)}.kpi.nv{border-top-color:var(--navy)}.kpi.am{border-top-color:var(--amber)}.kpi.gr{border-top-color:var(--green)}
 .kl{font-size:10px;color:var(--g1);margin-bottom:3px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
 .kv{font-size:20px;font-weight:500;color:var(--navy);font-family:'Comfortaa',cursive;line-height:1.1}
-.kv.green{color:#1a7a3a}.kv.red{color:var(--red)}.kv.amber{color:#BA7517}
+.kv.green{color:var(--green)}.kv.red{color:var(--red)}.kv.amber{color:var(--amber)}
 .ks{font-size:10px;color:var(--g2);margin-top:3px}
+
+/* PROGRESS BAR */
+.progress-wrap{margin-top:5px}
+.progress-bar{height:5px;background:var(--g3);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .4s}
+.progress-pct{font-size:10px;color:var(--g1);margin-top:2px}
 
 /* CARDS */
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .card{background:var(--white);border-radius:10px;border:1px solid rgba(0,0,0,0.06);padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
 .card.full{grid-column:1/-1}
-.ct{font-size:10px;font-weight:600;color:var(--g1);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:6px}
-.ct-badge{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:600}
+.ct{font-size:10px;font-weight:600;color:var(--g1);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em}
+.ct-badge{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:600;margin-left:4px}
 .badge-teal{background:rgba(12,116,136,0.1);color:var(--teal)}
 .badge-red{background:rgba(246,38,66,0.1);color:var(--red)}
+.badge-green{background:rgba(26,122,58,0.1);color:var(--green)}
+.badge-amber{background:rgba(186,117,23,0.1);color:var(--amber)}
 .cw{position:relative;width:100%}
 .leg{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:11px;color:var(--g1)}
 .ld{width:9px;height:9px;border-radius:2px;flex-shrink:0;display:inline-block;margin-right:3px;vertical-align:middle}
-
-/* INSIGHT BOX */
 .insight{background:rgba(12,116,136,0.06);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:9px 12px;font-size:11px;color:var(--navy);line-height:1.5;margin-top:8px}
 .insight strong{color:var(--teal)}
+
+/* META VS REALIZADO */
+.mvr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.mvr-card{background:var(--white);border-radius:10px;padding:14px 16px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.mvr-title{font-size:10px;font-weight:600;color:var(--g1);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.mvr-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.mvr-label{font-size:11px;color:var(--g1)}
+.mvr-vals{font-size:11px;font-weight:500}
+.mvr-real{color:var(--navy)}
+.mvr-meta{color:var(--g2)}
+
+/* CRESCIMENTO TABLE */
+.cresc-table{width:100%;border-collapse:collapse;font-size:12px}
+.cresc-table th{background:var(--navy);color:var(--teal-l);font-weight:500;padding:8px 12px;text-align:right;font-size:11px}
+.cresc-table th:first-child{text-align:left}
+.cresc-table td{padding:7px 12px;text-align:right;border-bottom:1px solid var(--g3)}
+.cresc-table td:first-child{text-align:left;font-weight:500;color:var(--navy)}
+.cresc-table .subrow td{color:var(--g1);font-size:11px;padding-left:20px}
+.cresc-table .subrow td:first-child{font-weight:400}
+.cresc-table .highlight{background:rgba(246,38,66,0.05)}
+.cresc-table .pct{font-size:10px;color:var(--g1)}
+.cresc-table .pct.up{color:var(--green)}
+.cresc-table .pct.dn{color:var(--red)}
+.col-2026{background:rgba(12,116,136,0.06);font-weight:500;color:var(--teal)}
+
+/* INPUT */
+.meta-input{width:100%;text-align:center;font-size:12px;padding:4px 2px;border:1px solid var(--g2);border-radius:5px;font-family:'Poppins',sans-serif}
 
 /* ERR / LOADING */
 .err{background:#fff0f2;border:1px solid #fcc;border-radius:8px;padding:11px 15px;font-size:12px;color:#a32d2d;display:none}
@@ -97,19 +127,16 @@ main{max-width:1400px;margin:0 auto;padding:18px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin-txt{color:var(--teal-l);font-size:13px}
 
-@media(max-width:1024px){.g3{grid-template-columns:1fr 1fr}.g4{grid-template-columns:1fr 1fr}}
-@media(max-width:700px){.g2,.g3,.g4{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:1024px){.g3{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.g2,.g3{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-logo">
-      <div class="brand-name">lucralize</div>
-      <div class="brand-sub">gestão comercial</div>
-    </div>
+    <div class="brand-name">lucralize</div>
+    <div class="brand-sub">gestão comercial</div>
     <div class="login-title">Acesso com Microsoft 365</div>
     <div class="login-desc">Entre com sua conta corporativa para visualizar os indicadores das listas do SharePoint em tempo real.</div>
     <button class="btn-login" onclick="signIn()">
@@ -120,7 +147,6 @@ main{max-width:1400px;margin:0 auto;padding:18px}
   <div style="font-size:11px;color:#657786;text-align:center;max-width:320px">Dados lidos diretamente do SharePoint da Lucralize. Nenhuma informação é armazenada externamente.</div>
 </div>
 
-<!-- APP -->
 <div id="app">
   <header>
     <div class="hdr-top">
@@ -147,10 +173,11 @@ main{max-width:1400px;margin:0 auto;padding:18px}
       <button class="tab-btn active" onclick="setTab('geral',this)">📊 Visão Geral</button>
       <button class="tab-btn" onclick="setTab('tech',this)">💻 Lucralize Tech</button>
       <button class="tab-btn" onclick="setTab('cont',this)">📋 Contabilidade</button>
+      <button class="tab-btn" onclick="setTab('crescimento',this)">🚀 Nosso Crescimento</button>
     </div>
   </header>
 
-  <div class="filters-bar">
+  <div class="filters-bar" id="filters-bar">
     <label>Filtrar por:</label>
     <select id="f-situacao" onchange="applyFilters()">
       <option value="">Todas as situações</option>
@@ -173,19 +200,23 @@ main{max-width:1400px;margin:0 auto;padding:18px}
   <main>
     <div id="err-banner" class="err"></div>
 
-    <!-- ══════════════ VISÃO GERAL ══════════════ -->
+    <!-- ══ VISÃO GERAL ══ -->
     <div class="section on" id="sec-geral">
-      <div class="sec-title">📌 Indicadores Consolidados — Contabilidade + Lucralize Tech</div>
+      <div class="sec-title">📌 Indicadores Consolidados</div>
       <div class="kpis" id="kpi-geral"></div>
+
+      <div class="sec-title">🎯 Meta vs Realizado 2026 — Consolidado</div>
+      <div class="mvr-grid" id="mvr-geral"></div>
 
       <div class="sec-title">📈 Evolução da Base de Clientes</div>
       <div class="card full">
-        <div class="ct">Clientes Ativos — Mês a Mês <span class="ct-badge badge-teal">Tech</span> <span class="ct-badge badge-red">Contabilidade</span></div>
-        <div class="cw" style="height:240px"><canvas id="c-geral-evolucao" role="img" aria-label="Evolução mensal de clientes ativos">Evolução acumulada de clientes ativos Tech e Contabilidade.</canvas></div>
+        <div class="ct">Clientes Ativos — Mês a Mês</div>
+        <div class="cw" style="height:250px"><canvas id="c-geral-evolucao" role="img" aria-label="Evolução mensal consolidada">Evolução acumulada.</canvas></div>
         <div class="leg">
           <span><span class="ld" style="background:#0C7488"></span>Tech</span>
           <span><span class="ld" style="background:#F62642"></span>Contabilidade</span>
-          <span><span class="ld" style="background:#0E1428;border:1px dashed #0E1428"></span>Total</span>
+          <span><span class="ld" style="background:#0E1428"></span>Total</span>
+          <span><span class="ld" style="background:#BA7517;opacity:.5"></span>Meta 2026</span>
         </div>
       </div>
 
@@ -193,7 +224,7 @@ main{max-width:1400px;margin:0 auto;padding:18px}
       <div class="g2">
         <div class="card">
           <div class="ct">Entradas vs Saídas — Consolidado</div>
-          <div class="cw" style="height:200px"><canvas id="c-geral-flow" role="img" aria-label="Entradas e saídas consolidadas">Fluxo mensal consolidado.</canvas></div>
+          <div class="cw" style="height:200px"><canvas id="c-geral-flow" role="img" aria-label="Fluxo consolidado">Entradas e saídas.</canvas></div>
           <div class="leg">
             <span><span class="ld" style="background:#0C7488"></span>Entradas Contab</span>
             <span><span class="ld" style="background:#91DBE4"></span>Entradas Tech</span>
@@ -202,221 +233,153 @@ main{max-width:1400px;margin:0 auto;padding:18px}
           </div>
         </div>
         <div class="card">
-          <div class="ct">Saldo Mensal Consolidado <span style="font-size:10px;color:var(--g1)">(Entradas − Saídas)</span></div>
-          <div class="cw" style="height:200px"><canvas id="c-geral-saldo" role="img" aria-label="Saldo mensal consolidado">Saldo mensal.</canvas></div>
-          <div class="insight" id="insight-saldo-geral"></div>
+          <div class="ct">Saldo Mensal Consolidado</div>
+          <div class="cw" style="height:200px"><canvas id="c-geral-saldo" role="img" aria-label="Saldo mensal">Saldo.</canvas></div>
+          <div class="insight" id="insight-geral"></div>
         </div>
       </div>
 
-      <div class="sec-title">💰 Receita e Churn</div>
+      <div class="sec-title">💰 Receita e Perfil</div>
       <div class="g3">
-        <div class="card">
-          <div class="ct">Receita por Unidade (MRR)</div>
-          <div class="cw" style="height:170px"><canvas id="c-geral-receita" role="img" aria-label="Receita consolidada">Contabilidade vs Tech.</canvas></div>
-          <div class="leg" id="leg-geral-receita"></div>
-        </div>
-        <div class="card">
-          <div class="ct">Situação dos Clientes</div>
-          <div class="cw" style="height:170px"><canvas id="c-geral-status" role="img" aria-label="Situação consolidada">Ativos, Inativos, Baixadas, Suspensos.</canvas></div>
-          <div class="leg" id="leg-geral-status"></div>
-        </div>
-        <div class="card">
-          <div class="ct">Origem dos Clientes — Top 8</div>
-          <div class="cw" style="height:170px"><canvas id="c-geral-origem" role="img" aria-label="Origem consolidada">Top origens.</canvas></div>
-        </div>
+        <div class="card"><div class="ct">Receita por Unidade (MRR)</div><div class="cw" style="height:170px"><canvas id="c-geral-receita" role="img" aria-label="Receita">MRR.</canvas></div><div class="leg" id="leg-geral-receita"></div></div>
+        <div class="card"><div class="ct">Situação dos Clientes</div><div class="cw" style="height:170px"><canvas id="c-geral-status" role="img" aria-label="Situação">Status.</canvas></div><div class="leg" id="leg-geral-status"></div></div>
+        <div class="card"><div class="ct">Origem dos Clientes — Top 8</div><div class="cw" style="height:170px"><canvas id="c-geral-origem" role="img" aria-label="Origem">Origens.</canvas></div></div>
       </div>
 
       <div class="sec-title">🗺️ Distribuição Geográfica</div>
       <div class="g2">
-        <div class="card">
-          <div class="ct">Clientes por Região</div>
-          <div class="cw" style="height:190px"><canvas id="c-geral-regiao" role="img" aria-label="Clientes por região">Regiões do Brasil.</canvas></div>
-          <div class="leg" id="leg-geral-regiao"></div>
-        </div>
-        <div class="card">
-          <div class="ct">Top 10 Estados</div>
-          <div class="cw" style="height:190px"><canvas id="c-geral-estado" role="img" aria-label="Top estados">MG, SP, RJ, etc.</canvas></div>
-        </div>
+        <div class="card"><div class="ct">Clientes por Região</div><div class="cw" style="height:190px"><canvas id="c-geral-regiao" role="img" aria-label="Regiões">Regiões.</canvas></div><div class="leg" id="leg-geral-regiao"></div></div>
+        <div class="card"><div class="ct">Top 10 Estados</div><div class="cw" style="height:190px"><canvas id="c-geral-estado" role="img" aria-label="Estados">Estados.</canvas></div></div>
       </div>
     </div>
 
-    <!-- ══════════════ LUCRALIZE TECH ══════════════ -->
+    <!-- ══ TECH ══ -->
     <div class="section" id="sec-tech">
       <div class="sec-title">📌 Indicadores — Lucralize Tech</div>
       <div class="kpis" id="kpi-tech"></div>
 
+      <div class="sec-title">🎯 Meta vs Realizado 2026 — Tech</div>
+      <div class="mvr-grid" id="mvr-tech"></div>
+
       <div class="sec-title">📈 Evolução da Base</div>
-      <div class="card full">
-        <div class="ct">Clientes Ativos — Mês a Mês</div>
-        <div class="cw" style="height:220px"><canvas id="c-tech-evolucao" role="img" aria-label="Evolução Tech">Evolução mensal Tech.</canvas></div>
-        <div class="leg">
-          <span><span class="ld" style="background:#0C7488"></span>Ativos acumulados</span>
-          <span><span class="ld" style="background:#91DBE4"></span>Entradas</span>
-          <span><span class="ld" style="background:#F62642"></span>Saídas</span>
-        </div>
-      </div>
+      <div class="card full"><div class="ct">Clientes Ativos — Mês a Mês</div><div class="cw" style="height:220px"><canvas id="c-tech-evolucao" role="img" aria-label="Evolução Tech">Evolução Tech.</canvas></div>
+        <div class="leg"><span><span class="ld" style="background:#0C7488"></span>Ativos acumulados</span><span><span class="ld" style="background:#91DBE4"></span>Entradas</span><span><span class="ld" style="background:#F62642"></span>Saídas</span><span><span class="ld" style="background:#BA7517;opacity:.5"></span>Meta 2026</span></div></div>
 
       <div class="sec-title">🔄 Fluxo de Contratos — Últimos 12 Meses</div>
       <div class="g2">
-        <div class="card">
-          <div class="ct">Entradas vs Saídas</div>
-          <div class="cw" style="height:190px"><canvas id="c-tech-flow" role="img" aria-label="Fluxo Tech">Entradas e saídas Tech.</canvas></div>
-          <div class="leg"><span><span class="ld" style="background:#0C7488"></span>Entradas</span><span><span class="ld" style="background:#F62642"></span>Saídas</span></div>
-        </div>
-        <div class="card">
-          <div class="ct">Saldo Mensal <span style="font-size:10px;color:var(--g1)">(Entradas − Saídas)</span></div>
-          <div class="cw" style="height:190px"><canvas id="c-tech-saldo" role="img" aria-label="Saldo Tech">Saldo mensal Tech.</canvas></div>
-          <div class="insight" id="insight-saldo-tech"></div>
-        </div>
+        <div class="card"><div class="ct">Entradas vs Saídas</div><div class="cw" style="height:190px"><canvas id="c-tech-flow" role="img" aria-label="Fluxo Tech">Fluxo.</canvas></div><div class="leg"><span><span class="ld" style="background:#0C7488"></span>Entradas</span><span><span class="ld" style="background:#F62642"></span>Saídas</span></div></div>
+        <div class="card"><div class="ct">Saldo Mensal</div><div class="cw" style="height:190px"><canvas id="c-tech-saldo" role="img" aria-label="Saldo Tech">Saldo.</canvas></div><div class="insight" id="insight-tech"></div></div>
       </div>
 
       <div class="sec-title">👥 Perfil da Base</div>
       <div class="g3">
-        <div class="card">
-          <div class="ct">Situação dos Clientes</div>
-          <div class="cw" style="height:160px"><canvas id="c-tech-status" role="img" aria-label="Situação Tech">Ativos, Inativos, etc.</canvas></div>
-          <div class="leg" id="leg-tech-status"></div>
-        </div>
-        <div class="card">
-          <div class="ct">Plano Contratado</div>
-          <div class="cw" style="height:160px"><canvas id="c-tech-plano" role="img" aria-label="Planos Tech">Essencial, Exclusivo, Plus.</canvas></div>
-          <div class="leg" id="leg-tech-plano"></div>
-        </div>
-        <div class="card">
-          <div class="ct">Regime Tributário</div>
-          <div class="cw" style="height:160px"><canvas id="c-tech-regime" role="img" aria-label="Regime Tech">Simples Nacional, MEI, etc.</canvas></div>
-          <div class="leg" id="leg-tech-regime"></div>
-        </div>
+        <div class="card"><div class="ct">Situação</div><div class="cw" style="height:160px"><canvas id="c-tech-status" role="img" aria-label="Status Tech">Status.</canvas></div><div class="leg" id="leg-tech-status"></div></div>
+        <div class="card"><div class="ct">Plano Contratado</div><div class="cw" style="height:160px"><canvas id="c-tech-plano" role="img" aria-label="Planos Tech">Planos.</canvas></div><div class="leg" id="leg-tech-plano"></div></div>
+        <div class="card"><div class="ct">Regime Tributário</div><div class="cw" style="height:160px"><canvas id="c-tech-regime" role="img" aria-label="Regime Tech">Regime.</canvas></div><div class="leg" id="leg-tech-regime"></div></div>
       </div>
       <div class="g3">
-        <div class="card">
-          <div class="ct">Tipo de Entrada <span class="ct-badge badge-teal">Como chegou</span></div>
-          <div class="cw" style="height:150px"><canvas id="c-tech-tipo" role="img" aria-label="Tipo entrada Tech">Constituição, Transferência.</canvas></div>
-          <div class="leg" id="leg-tech-tipo"></div>
-        </div>
-        <div class="card">
-          <div class="ct">Motivo de Saída <span class="ct-badge badge-red">Por que saiu</span></div>
-          <div class="cw" style="height:150px"><canvas id="c-tech-motivo" role="img" aria-label="Motivo saída Tech">Baixa, Rescisão, etc.</canvas></div>
-        </div>
-        <div class="card">
-          <div class="ct">Responsável pelo Cliente</div>
-          <div class="cw" style="height:150px"><canvas id="c-tech-resp" role="img" aria-label="Responsável Tech">Brenda Medeiros, Nayara Roela.</canvas></div>
-          <div class="leg" id="leg-tech-resp"></div>
-        </div>
+        <div class="card"><div class="ct">Tipo de Entrada <span class="ct-badge badge-teal">Como chegou</span></div><div class="cw" style="height:150px"><canvas id="c-tech-tipo" role="img" aria-label="Tipo Tech">Tipo.</canvas></div><div class="leg" id="leg-tech-tipo"></div></div>
+        <div class="card"><div class="ct">Motivo de Saída <span class="ct-badge badge-red">Por que saiu</span></div><div class="cw" style="height:150px"><canvas id="c-tech-motivo" role="img" aria-label="Motivo Tech">Motivo.</canvas></div></div>
+        <div class="card"><div class="ct">Responsável</div><div class="cw" style="height:150px"><canvas id="c-tech-resp" role="img" aria-label="Resp Tech">Resp.</canvas></div><div class="leg" id="leg-tech-resp"></div></div>
       </div>
-
-      <div class="sec-title">📣 Origem dos Clientes</div>
-      <div class="card full">
-        <div class="ct">Canal de Aquisição — Top 10 <span class="ct-badge badge-teal">De onde vêm os clientes</span></div>
-        <div class="cw" style="height:220px"><canvas id="c-tech-origem" role="img" aria-label="Origem Tech">Top origens Tech.</canvas></div>
-      </div>
-
+      <div class="sec-title">📣 Origem</div>
+      <div class="card full"><div class="ct">Canal de Aquisição — Top 10</div><div class="cw" style="height:220px"><canvas id="c-tech-origem" role="img" aria-label="Origem Tech">Origens.</canvas></div></div>
       <div class="sec-title">🗺️ Distribuição Geográfica</div>
       <div class="g2">
-        <div class="card">
-          <div class="ct">Clientes por Região</div>
-          <div class="cw" style="height:190px"><canvas id="c-tech-regiao" role="img" aria-label="Regiões Tech">Regiões do Brasil.</canvas></div>
-          <div class="leg" id="leg-tech-regiao"></div>
-        </div>
-        <div class="card">
-          <div class="ct">Top 10 Estados</div>
-          <div class="cw" style="height:190px"><canvas id="c-tech-estado" role="img" aria-label="Top estados Tech">MG, SP, RJ, etc.</canvas></div>
-        </div>
+        <div class="card"><div class="ct">Por Região</div><div class="cw" style="height:190px"><canvas id="c-tech-regiao" role="img" aria-label="Região Tech">Regiões.</canvas></div><div class="leg" id="leg-tech-regiao"></div></div>
+        <div class="card"><div class="ct">Top 10 Estados</div><div class="cw" style="height:190px"><canvas id="c-tech-estado" role="img" aria-label="Estados Tech">Estados.</canvas></div></div>
       </div>
     </div>
 
-    <!-- ══════════════ CONTABILIDADE ══════════════ -->
+    <!-- ══ CONTABILIDADE ══ -->
     <div class="section" id="sec-cont">
       <div class="sec-title">📌 Indicadores — Contabilidade</div>
       <div class="kpis" id="kpi-cont"></div>
 
+      <div class="sec-title">🎯 Meta vs Realizado 2026 — Contabilidade</div>
+      <div class="mvr-grid" id="mvr-cont"></div>
+
       <div class="sec-title">📈 Evolução da Base</div>
-      <div class="card full">
-        <div class="ct">Clientes Ativos — Mês a Mês</div>
-        <div class="cw" style="height:220px"><canvas id="c-cont-evolucao" role="img" aria-label="Evolução Contabilidade">Evolução mensal Contabilidade.</canvas></div>
-        <div class="leg">
-          <span><span class="ld" style="background:#F62642"></span>Ativos acumulados</span>
-          <span><span class="ld" style="background:#0C7488"></span>Entradas</span>
-          <span><span class="ld" style="background:#0E1428"></span>Saídas</span>
-        </div>
-      </div>
+      <div class="card full"><div class="ct">Clientes Ativos — Mês a Mês</div><div class="cw" style="height:220px"><canvas id="c-cont-evolucao" role="img" aria-label="Evolução Contab">Evolução Contab.</canvas></div>
+        <div class="leg"><span><span class="ld" style="background:#F62642"></span>Ativos acumulados</span><span><span class="ld" style="background:#0C7488"></span>Entradas</span><span><span class="ld" style="background:#0E1428"></span>Saídas</span><span><span class="ld" style="background:#BA7517;opacity:.5"></span>Meta 2026</span></div></div>
 
       <div class="sec-title">🔄 Fluxo de Contratos — Últimos 12 Meses</div>
       <div class="g2">
-        <div class="card">
-          <div class="ct">Entradas vs Saídas</div>
-          <div class="cw" style="height:190px"><canvas id="c-cont-flow" role="img" aria-label="Fluxo Contabilidade">Entradas e saídas Contabilidade.</canvas></div>
-          <div class="leg"><span><span class="ld" style="background:#0C7488"></span>Entradas</span><span><span class="ld" style="background:#F62642"></span>Saídas</span></div>
-        </div>
-        <div class="card">
-          <div class="ct">Saldo Mensal <span style="font-size:10px;color:var(--g1)">(Entradas − Saídas)</span></div>
-          <div class="cw" style="height:190px"><canvas id="c-cont-saldo" role="img" aria-label="Saldo Contabilidade">Saldo mensal Contabilidade.</canvas></div>
-          <div class="insight" id="insight-saldo-cont"></div>
-        </div>
+        <div class="card"><div class="ct">Entradas vs Saídas</div><div class="cw" style="height:190px"><canvas id="c-cont-flow" role="img" aria-label="Fluxo Contab">Fluxo.</canvas></div><div class="leg"><span><span class="ld" style="background:#0C7488"></span>Entradas</span><span><span class="ld" style="background:#F62642"></span>Saídas</span></div></div>
+        <div class="card"><div class="ct">Saldo Mensal</div><div class="cw" style="height:190px"><canvas id="c-cont-saldo" role="img" aria-label="Saldo Contab">Saldo.</canvas></div><div class="insight" id="insight-cont"></div></div>
       </div>
 
       <div class="sec-title">👥 Perfil da Base</div>
       <div class="g3">
-        <div class="card">
-          <div class="ct">Situação dos Clientes</div>
-          <div class="cw" style="height:160px"><canvas id="c-cont-status" role="img" aria-label="Situação Contabilidade">Ativos, Inativos, etc.</canvas></div>
-          <div class="leg" id="leg-cont-status"></div>
-        </div>
-        <div class="card">
-          <div class="ct">Classificação do Cliente</div>
-          <div class="cw" style="height:160px"><canvas id="c-cont-class" role="img" aria-label="Classificação Contabilidade">Padrão, Crítico, Intermediário.</canvas></div>
-          <div class="leg" id="leg-cont-class"></div>
-        </div>
-        <div class="card">
-          <div class="ct">Regime Tributário</div>
-          <div class="cw" style="height:160px"><canvas id="c-cont-regime" role="img" aria-label="Regime Contabilidade">Simples, Lucro Presumido, etc.</canvas></div>
-          <div class="leg" id="leg-cont-regime"></div>
-        </div>
+        <div class="card"><div class="ct">Situação</div><div class="cw" style="height:160px"><canvas id="c-cont-status" role="img" aria-label="Status Contab">Status.</canvas></div><div class="leg" id="leg-cont-status"></div></div>
+        <div class="card"><div class="ct">Classificação</div><div class="cw" style="height:160px"><canvas id="c-cont-class" role="img" aria-label="Class Contab">Class.</canvas></div><div class="leg" id="leg-cont-class"></div></div>
+        <div class="card"><div class="ct">Regime Tributário</div><div class="cw" style="height:160px"><canvas id="c-cont-regime" role="img" aria-label="Regime Contab">Regime.</canvas></div><div class="leg" id="leg-cont-regime"></div></div>
       </div>
       <div class="g3">
-        <div class="card">
-          <div class="ct">Tipo de Entrada <span class="ct-badge badge-teal">Como chegou</span></div>
-          <div class="cw" style="height:150px"><canvas id="c-cont-tipo" role="img" aria-label="Tipo entrada Contabilidade">Transferência, Constituição.</canvas></div>
-          <div class="leg" id="leg-cont-tipo"></div>
-        </div>
-        <div class="card">
-          <div class="ct">Motivo de Saída <span class="ct-badge badge-red">Por que saiu</span></div>
-          <div class="cw" style="height:150px"><canvas id="c-cont-motivo" role="img" aria-label="Motivo saída Contabilidade">Insatisfação, Rescisão, etc.</canvas></div>
-        </div>
-        <div class="card">
-          <div class="ct">Responsável Contábil</div>
-          <div class="cw" style="height:150px"><canvas id="c-cont-resp" role="img" aria-label="Responsável Contabilidade">Carolina, Tayna, Cristiane.</canvas></div>
-        </div>
+        <div class="card"><div class="ct">Tipo de Entrada <span class="ct-badge badge-teal">Como chegou</span></div><div class="cw" style="height:150px"><canvas id="c-cont-tipo" role="img" aria-label="Tipo Contab">Tipo.</canvas></div><div class="leg" id="leg-cont-tipo"></div></div>
+        <div class="card"><div class="ct">Motivo de Saída <span class="ct-badge badge-red">Por que saiu</span></div><div class="cw" style="height:150px"><canvas id="c-cont-motivo" role="img" aria-label="Motivo Contab">Motivo.</canvas></div></div>
+        <div class="card"><div class="ct">Responsável Contábil</div><div class="cw" style="height:150px"><canvas id="c-cont-resp" role="img" aria-label="Resp Contab">Resp.</canvas></div></div>
       </div>
       <div class="g2">
-        <div class="card">
-          <div class="ct">Núcleo</div>
-          <div class="cw" style="height:150px"><canvas id="c-cont-nucleo" role="img" aria-label="Núcleo Contabilidade">Lucralize, Essencial.</canvas></div>
-          <div class="leg" id="leg-cont-nucleo"></div>
-        </div>
-        <div class="card">
-          <div class="ct">Carteira GS</div>
-          <div class="cw" style="height:150px"><canvas id="c-cont-carteira" role="img" aria-label="Carteira GS">Diogo Vieira, Italo Santana.</canvas></div>
-          <div class="leg" id="leg-cont-carteira"></div>
-        </div>
+        <div class="card"><div class="ct">Núcleo</div><div class="cw" style="height:150px"><canvas id="c-cont-nucleo" role="img" aria-label="Nucleo">Nucleo.</canvas></div><div class="leg" id="leg-cont-nucleo"></div></div>
+        <div class="card"><div class="ct">Carteira GS</div><div class="cw" style="height:150px"><canvas id="c-cont-carteira" role="img" aria-label="Carteira">Carteira.</canvas></div><div class="leg" id="leg-cont-carteira"></div></div>
       </div>
-
-      <div class="sec-title">📣 Origem dos Clientes</div>
-      <div class="card full">
-        <div class="ct">Canal de Aquisição — Top 10 <span class="ct-badge badge-teal">De onde vêm os clientes</span></div>
-        <div class="cw" style="height:220px"><canvas id="c-cont-origem" role="img" aria-label="Origem Contabilidade">Top origens Contabilidade.</canvas></div>
-      </div>
-
+      <div class="sec-title">📣 Origem</div>
+      <div class="card full"><div class="ct">Canal de Aquisição — Top 10</div><div class="cw" style="height:220px"><canvas id="c-cont-origem" role="img" aria-label="Origem Contab">Origens.</canvas></div></div>
       <div class="sec-title">🗺️ Distribuição Geográfica</div>
       <div class="g2">
-        <div class="card">
-          <div class="ct">Clientes por Região</div>
-          <div class="cw" style="height:190px"><canvas id="c-cont-regiao" role="img" aria-label="Regiões Contabilidade">Regiões do Brasil.</canvas></div>
-          <div class="leg" id="leg-cont-regiao"></div>
+        <div class="card"><div class="ct">Por Região</div><div class="cw" style="height:190px"><canvas id="c-cont-regiao" role="img" aria-label="Região Contab">Regiões.</canvas></div><div class="leg" id="leg-cont-regiao"></div></div>
+        <div class="card"><div class="ct">Top 10 Estados</div><div class="cw" style="height:190px"><canvas id="c-cont-estado" role="img" aria-label="Estados Contab">Estados.</canvas></div></div>
+      </div>
+    </div>
+
+    <!-- ══ NOSSO CRESCIMENTO ══ -->
+    <div class="section" id="sec-crescimento">
+      <div class="sec-title">📊 Histórico Anual de Crescimento</div>
+      <div class="card full">
+        <div class="ct">Estatísticas de Crescimento — 2021 a 2026</div>
+        <div style="overflow-x:auto">
+          <table class="cresc-table" id="tabela-crescimento"></table>
         </div>
-        <div class="card">
-          <div class="ct">Top 10 Estados</div>
-          <div class="cw" style="height:190px"><canvas id="c-cont-estado" role="img" aria-label="Top estados Contabilidade">MG, SP, RJ, etc.</canvas></div>
+      </div>
+
+      <div class="sec-title">📈 Evolução Visual</div>
+      <div class="g2">
+        <div class="card"><div class="ct">Clientes Ativos por Ano</div><div class="cw" style="height:220px"><canvas id="c-cresc-clientes" role="img" aria-label="Clientes por ano">Clientes.</canvas></div></div>
+        <div class="card"><div class="ct">Faturamento Anual</div><div class="cw" style="height:220px"><canvas id="c-cresc-fat" role="img" aria-label="Faturamento anual">Faturamento.</canvas></div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="ct">Entradas vs Saídas por Ano</div><div class="cw" style="height:220px"><canvas id="c-cresc-fluxo" role="img" aria-label="Fluxo anual">Fluxo anual.</canvas></div></div>
+        <div class="card"><div class="ct">Crescimento de Clientes (%) por Ano</div><div class="cw" style="height:220px"><canvas id="c-cresc-pct" role="img" aria-label="Crescimento %">Crescimento %.</canvas></div></div>
+      </div>
+
+      <div class="sec-title">🗓️ Sazonalidade — Representatividade Mensal de Entradas (%)</div>
+      <div class="card full">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+          <div class="ct" style="margin-bottom:0">2023, 2024, 2025 e Meta 2026 (editável)</div>
+          <div class="leg">
+            <span><span class="ld" style="background:#AAB8C2"></span>2023</span>
+            <span><span class="ld" style="background:#0C7488"></span>2024</span>
+            <span><span class="ld" style="background:#91DBE4"></span>2025</span>
+            <span><span class="ld" style="background:#F62642"></span>2026 meta</span>
+          </div>
+        </div>
+        <div class="cw" style="height:300px"><canvas id="c-saz" role="img" aria-label="Sazonalidade por mês">Sazonalidade.</canvas></div>
+        <div style="margin-top:14px;padding:12px;background:var(--g3);border-radius:8px">
+          <div style="font-size:11px;font-weight:600;color:var(--navy);margin-bottom:8px">Ajuste o % de 2026 por mês <span style="font-weight:400;color:var(--g1)">(Total: <span id="saz-total" style="font-weight:600">100%</span>)</span></div>
+          <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:6px" id="saz-inputs"></div>
+        </div>
+      </div>
+
+      <div class="sec-title">🎯 Projeção Mensal 2026</div>
+      <div class="card full">
+        <div class="ct">Entradas, Saídas e Clientes Ativos Projetados — 2026</div>
+        <div class="cw" style="height:260px"><canvas id="c-proj-2026" role="img" aria-label="Projeção 2026">Projeção mensal 2026.</canvas></div>
+        <div class="leg">
+          <span><span class="ld" style="background:#0C7488"></span>Entradas previstas</span>
+          <span><span class="ld" style="background:#F62642"></span>Saídas previstas</span>
+          <span><span class="ld" style="background:#BA7517"></span>Acumulado projetado</span>
+          <span><span class="ld" style="background:#0E1428;opacity:.4"></span>Meta final (750)</span>
         </div>
       </div>
     </div>
@@ -426,413 +389,516 @@ main{max-width:1400px;margin:0 auto;padding:18px}
 <div id="loading"><div class="spinner"></div><div class="spin-txt">Carregando dados do SharePoint…</div></div>
 
 <script>
-// ═══════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════
 const CONFIG = {
-  clientId: 'c0868f3b-764c-4c5b-a9fc-4af4b6eb0baf',
-  tenantId: '5173aa83-66e1-49f3-9128-f2251b43294d',
-  redirectUri: 'https://ronaldocassimiro.github.io/gestao-comercial/dashboard-lucralize-sharepoint.html',
-  contabilidade: { siteUrl: 'lucralize.sharepoint.com:/', listName: 'Controle de Clientes' },
-  tech: { siteUrl: 'lucralize.sharepoint.com:/sites/LUCRALIZETECH', listName: 'Base de Usuários' }
+  clientId:'c0868f3b-764c-4c5b-a9fc-4af4b6eb0baf',
+  tenantId:'5173aa83-66e1-49f3-9128-f2251b43294d',
+  redirectUri:'https://ronaldocassimiro.github.io/gestao-comercial/dashboard-lucralize-sharepoint.html',
+  contabilidade:{siteUrl:'lucralize.sharepoint.com:/',listName:'Controle de Clientes'},
+  tech:{siteUrl:'lucralize.sharepoint.com:/sites/LUCRALIZETECH',listName:'Base de Usuários'}
+};
+const AUTHORITY=`https://login.microsoftonline.com/${CONFIG.tenantId}`;
+const SCOPES=['https://graph.microsoft.com/Sites.Read.All','https://graph.microsoft.com/User.Read'];
+const PAL=['#0C7488','#F62642','#91DBE4','#0E1428','#657786','#AAB8C2','#BA7517','#639922','#7F77DD','#D4537E'];
+const MESES_LABEL=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const ALL_PERIODS=["2022-01","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05"];
+const ALL_LABELS=ALL_PERIODS.map(p=>{const[y,m]=p.split('-');return`${m}/${y.slice(2)}`;});
+const LAST12=ALL_PERIODS.length-12;
+
+// METAS 2026
+const META={
+  ativos_total:750, ativos_contab:263, ativos_tech:487,
+  entradas_total:473, entradas_contab:93, entradas_tech:380,
+  saidas_total:165, saidas_contab:55, saidas_tech:110,
+  mrr_contab:205000, mrr_tech:114000,
+  fat_contab:2460000, fat_tech:1370000, fat_total:3830000,
+  ticket_contab:780, ticket_tech:234
 };
 
-const AUTHORITY = `https://login.microsoftonline.com/${CONFIG.tenantId}`;
-const SCOPES = ['https://graph.microsoft.com/Sites.Read.All','https://graph.microsoft.com/User.Read'];
-const PAL = ['#0C7488','#F62642','#91DBE4','#0E1428','#657786','#AAB8C2','#BA7517','#639922','#7F77DD','#D4537E'];
+// Sazonalidade histórica
+const SAZ={
+  '2023':[10.9,10.1,0.8,1.7,2.5,6.7,8.4,16.8,7.6,7.6,10.1,16.8],
+  '2024':[5.9,4.2,3.4,11.0,4.2,5.9,17.8,7.6,11.0,4.2,9.3,15.3],
+  '2025':[8.3,4.7,6.8,12.2,8.6,7.9,12.2,7.2,11.2,8.6,2.5,9.7]
+};
+const SAZ_MEDIA=MESES_LABEL.map((_,i)=>Math.round(((SAZ['2023'][i]+SAZ['2024'][i]+SAZ['2025'][i])/3)*10)/10);
+let saz2026=[...SAZ_MEDIA];
 
-// Historical timeline (Jan/2022 → Mai/2025 — 41 months)
-const ALL_PERIODS = ["2022-01","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05"];
-const ALL_LABELS = ALL_PERIODS.map(p => { const [y,m] = p.split('-'); return `${m}/${y.slice(2)}`; });
-const LAST12_IDX = ALL_PERIODS.length - 12;
-const LAST12_PERIODS = ALL_PERIODS.slice(LAST12_IDX);
-const LAST12_LABELS = ALL_LABELS.slice(LAST12_IDX);
+// Metas mensais saídas
+const META_S_MENSAL=[15,11,12,8,10,11,5,17,9,28,5,33];
 
-let accessToken = null;
-let rawContab = [], rawTech = [];
-let charts = {};
+// Histórico anual
+const HIST={
+  anos:['2021','2022','2023','2024','2025','2026'],
+  ativos_c:[85,138,184,195,203,263],
+  ativos_t:[1,8,25,77,242,487],
+  entradas_c:[85,89,93,59,72,93],
+  entradas_t:[1,7,26,59,206,380],
+  saidas_c:[0,36,49,46,66,55],
+  saidas_t:[0,0,9,8,40,110],
+  fat:[759588,1250736,1707036,1947876,2472528,3830000]
+};
 
-// ═══════════════════════════════════
+let accessToken=null, rawContab=[], rawTech=[], charts={};
+
 // AUTH
-// ═══════════════════════════════════
-function generateVerifier() {
-  const a = new Uint8Array(32); crypto.getRandomValues(a);
-  return btoa(String.fromCharCode(...a)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-}
-async function generateChallenge(v) {
-  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v));
-  return btoa(String.fromCharCode(...new Uint8Array(d))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-}
-async function signIn() {
-  const v = generateVerifier(), c = await generateChallenge(v), s = btoa(Math.random().toString());
-  sessionStorage.setItem('pkce_v', v); sessionStorage.setItem('oauth_s', s);
-  const p = new URLSearchParams({ client_id:CONFIG.clientId, response_type:'code', redirect_uri:CONFIG.redirectUri, response_mode:'fragment', scope:SCOPES.join(' '), state:s, code_challenge:c, code_challenge_method:'S256' });
-  window.location.href = `${AUTHORITY}/oauth2/v2.0/authorize?${p}`;
-}
-function signOut() {
-  accessToken = null; sessionStorage.clear();
-  window.location.href = `${AUTHORITY}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(CONFIG.redirectUri)}`;
-}
-async function exchangeCode(code) {
-  const body = new URLSearchParams({ client_id:CONFIG.clientId, grant_type:'authorization_code', code, redirect_uri:CONFIG.redirectUri, code_verifier:sessionStorage.getItem('pkce_v') });
-  const r = await fetch(`${AUTHORITY}/oauth2/v2.0/token`, { method:'POST', body, headers:{'Content-Type':'application/x-www-form-urlencoded'} });
-  const d = await r.json();
-  if (d.error) throw new Error(d.error_description);
-  return d.access_token;
-}
+function generateVerifier(){const a=new Uint8Array(32);crypto.getRandomValues(a);return btoa(String.fromCharCode(...a)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');}
+async function generateChallenge(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));return btoa(String.fromCharCode(...new Uint8Array(d))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');}
+async function signIn(){const v=generateVerifier(),c=await generateChallenge(v),s=btoa(Math.random().toString());sessionStorage.setItem('pkce_v',v);sessionStorage.setItem('oauth_s',s);const p=new URLSearchParams({client_id:CONFIG.clientId,response_type:'code',redirect_uri:CONFIG.redirectUri,response_mode:'fragment',scope:SCOPES.join(' '),state:s,code_challenge:c,code_challenge_method:'S256'});window.location.href=`${AUTHORITY}/oauth2/v2.0/authorize?${p}`;}
+function signOut(){accessToken=null;sessionStorage.clear();window.location.href=`${AUTHORITY}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(CONFIG.redirectUri)}`;}
+async function exchangeCode(code){const body=new URLSearchParams({client_id:CONFIG.clientId,grant_type:'authorization_code',code,redirect_uri:CONFIG.redirectUri,code_verifier:sessionStorage.getItem('pkce_v')});const r=await fetch(`${AUTHORITY}/oauth2/v2.0/token`,{method:'POST',body,headers:{'Content-Type':'application/x-www-form-urlencoded'}});const d=await r.json();if(d.error)throw new Error(d.error_description);return d.access_token;}
 
-// ═══════════════════════════════════
-// GRAPH API
-// ═══════════════════════════════════
-async function graphGet(url) {
-  const r = await fetch(`https://graph.microsoft.com/v1.0${url}`, { headers:{ Authorization:`Bearer ${accessToken}` } });
-  if (!r.ok) throw new Error(`Graph API error: ${r.status} ${url}`);
-  return r.json();
-}
-async function getSiteId(siteUrl) { return (await graphGet(`/sites/${siteUrl}`)).id; }
-async function getListItems(siteId, listName) {
-  let items = [], url = `/sites/${siteId}/lists/${encodeURIComponent(listName)}/items?expand=fields&$top=999`;
-  while (url) {
-    const d = await graphGet(url);
-    items = items.concat(d.value||[]);
-    url = d['@odata.nextLink'] ? d['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0','') : null;
-  }
-  return items.map(i => i.fields||{});
-}
-async function loadAll() {
-  showLoading(true); hideErr();
-  try {
-    const me = await graphGet('/me'); setUserUI(me);
-    const sIdC = await getSiteId(CONFIG.contabilidade.siteUrl);
-    rawContab = await getListItems(sIdC, CONFIG.contabilidade.listName);
-    const sIdT = await getSiteId(CONFIG.tech.siteUrl);
-    rawTech = await getListItems(sIdT, CONFIG.tech.listName);
-    document.getElementById('last-upd').textContent = 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-    applyFilters();
-  } catch(e) { showErr('Erro ao carregar dados: ' + e.message); }
-  finally { showLoading(false); }
-}
+// GRAPH
+async function graphGet(url){const r=await fetch(`https://graph.microsoft.com/v1.0${url}`,{headers:{Authorization:`Bearer ${accessToken}`}});if(!r.ok)throw new Error(`Graph API error: ${r.status} ${url}`);return r.json();}
+async function getSiteId(siteUrl){return(await graphGet(`/sites/${siteUrl}`)).id;}
+async function getListItems(siteId,listName){let items=[],url=`/sites/${siteId}/lists/${encodeURIComponent(listName)}/items?expand=fields&$top=999`;while(url){const d=await graphGet(url);items=items.concat(d.value||[]);url=d['@odata.nextLink']?d['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0',''):null;}return items.map(i=>i.fields||{});}
+async function loadAll(){showLoading(true);hideErr();try{const me=await graphGet('/me');setUserUI(me);const sIdC=await getSiteId(CONFIG.contabilidade.siteUrl);rawContab=await getListItems(sIdC,CONFIG.contabilidade.listName);const sIdT=await getSiteId(CONFIG.tech.siteUrl);rawTech=await getListItems(sIdT,CONFIG.tech.listName);document.getElementById('last-upd').textContent='Atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});applyFilters();}catch(e){showErr('Erro ao carregar dados: '+e.message);}finally{showLoading(false);}}
 
-// ═══════════════════════════════════
 // FIELD HELPERS
-// ═══════════════════════════════════
-function fv(r,...keys) {
-  for (const k of keys) if (r[k]!==undefined&&r[k]!==null&&r[k]!=='') return String(r[k]);
-  return '';
-}
-function getSituacao(r) {
-  return (r['Situa_x00e7__x00e3_o']||r['Situ_x00e7__x00e3_o']||r.Situacao||r['Situação']||'').toUpperCase();
-}
-function getRegime(r) {
-  return fv(r,'Regime_x0020_Tribut_x00e1_rio_x0020_Ano_x0020_Atual','RegimeTributarioAnoAtual','RegimeTribut_x00e1_rioAnoAtual');
-}
-function safeYM(val) {
-  if (!val) return null;
-  const s = String(val).trim();
-  if (s.includes('/')) { const p = s.split('/'); if (p.length===2&&p[1].length===4) return `${p[1]}-${p[0].padStart(2,'0')}`; }
-  if (s.match(/^\d{4}-\d{2}/)) return s.substring(0,7);
-  return null;
-}
-function getEntradaYM_contab(r) {
-  const v = fv(r,'DatadoContrato','Data_x0020_do_x0020_Contrato','DataDoContrato');
-  if (!v) return null;
-  try { const d = new Date(v); if (!isNaN(d)) return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; } catch {}
-  return safeYM(v);
-}
-function getSaidaYM_contab(r) { return safeYM(fv(r,'Compet_x00ea_nciadeSa_x00ed_a','Compet_x00ea_ncia_x0020_de_x0020_Sa_x00ed_da')); }
-function getEntradaYM_tech(r) {
-  const f = fv(r,'field_11','Compet_x00ea_ncia','Competência');
-  if (f) return safeYM(f);
-  if (r.Created) { try { const d = new Date(r.Created); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; } catch {} }
-  return null;
-}
-function getSaidaYM_tech(r) {
-  const sit = getSituacao(r);
-  if (['INATIVO','BAIXADA','SUSPENSO','EM CANCELAMENTO'].includes(sit) && r.Modified) {
-    try { const d = new Date(r.Modified); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; } catch {}
-  }
-  return null;
-}
-function getEstado(r) {
-  const raw = fv(r,'Estado','field_7','estado');
-  const map = {'PARÁ':'PA','RIO DE JANEIRO':'RJ','NITEROI':'RJ','SÃO PAULO':'SP','MINAS GERAIS':'MG'};
-  const s = raw.trim().toUpperCase();
-  return map[s]||s||'N/D';
-}
-const REGIOES = {'AC':'Norte','AM':'Norte','AP':'Norte','PA':'Norte','RO':'Norte','RR':'Norte','TO':'Norte','AL':'Nordeste','BA':'Nordeste','CE':'Nordeste','MA':'Nordeste','PB':'Nordeste','PE':'Nordeste','PI':'Nordeste','RN':'Nordeste','SE':'Nordeste','DF':'Centro-Oeste','GO':'Centro-Oeste','MS':'Centro-Oeste','MT':'Centro-Oeste','ES':'Sudeste','MG':'Sudeste','RJ':'Sudeste','SP':'Sudeste','PR':'Sul','RS':'Sul','SC':'Sul'};
-function getRegiao(est) { return REGIOES[est]||'Outros'; }
-const PLANO_MAP = {'1':'Essencial','2':'Exclusivo','3':'Plus'};
-function getPlano(r) { const p = fv(r,'Plano','PlanoLookupId'); return PLANO_MAP[p]||p||'N/D'; }
+function fv(r,...keys){for(const k of keys)if(r[k]!==undefined&&r[k]!==null&&r[k]!=='')return String(r[k]);return'';}
+function getSituacao(r){return(r['Situa_x00e7__x00e3_o']||r['Situ_x00e7__x00e3_o']||r.Situacao||r['Situação']||'').toUpperCase();}
+function getRegime(r){return fv(r,'Regime_x0020_Tribut_x00e1_rio_x0020_Ano_x0020_Atual','RegimeTributarioAnoAtual','RegimeTribut_x00e1_rioAnoAtual');}
+function safeYM(val){if(!val)return null;const s=String(val).trim();if(s.includes('/')){const p=s.split('/');if(p.length===2&&p[1].length===4)return`${p[1]}-${p[0].padStart(2,'0')}`;}if(s.match(/^\d{4}-\d{2}/))return s.substring(0,7);return null;}
+function getEntradaYM_contab(r){const v=fv(r,'DatadoContrato','Data_x0020_do_x0020_Contrato','DataDoContrato');if(!v)return null;try{const d=new Date(v);if(!isNaN(d))return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}catch{}return safeYM(v);}
+function getSaidaYM_contab(r){return safeYM(fv(r,'Compet_x00ea_nciadeSa_x00ed_a','Compet_x00ea_ncia_x0020_de_x0020_Sa_x00ed_da'));}
+function getEntradaYM_tech(r){const f=fv(r,'field_11','Compet_x00ea_ncia','Competência');if(f)return safeYM(f);if(r.Created){try{const d=new Date(r.Created);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}catch{}}return null;}
+function getSaidaYM_tech(r){const sit=getSituacao(r);if(['INATIVO','BAIXADA','SUSPENSO','EM CANCELAMENTO'].includes(sit)&&r.Modified){try{const d=new Date(r.Modified);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}catch{}}return null;}
+function getEstado(r){const raw=fv(r,'Estado','field_7','estado');const map={'PARÁ':'PA','RIO DE JANEIRO':'RJ','NITEROI':'RJ','SÃO PAULO':'SP','MINAS GERAIS':'MG'};const s=raw.trim().toUpperCase();return map[s]||s||'N/D';}
+const REGIOES={'AC':'Norte','AM':'Norte','AP':'Norte','PA':'Norte','RO':'Norte','RR':'Norte','TO':'Norte','AL':'Nordeste','BA':'Nordeste','CE':'Nordeste','MA':'Nordeste','PB':'Nordeste','PE':'Nordeste','PI':'Nordeste','RN':'Nordeste','SE':'Nordeste','DF':'Centro-Oeste','GO':'Centro-Oeste','MS':'Centro-Oeste','MT':'Centro-Oeste','ES':'Sudeste','MG':'Sudeste','RJ':'Sudeste','SP':'Sudeste','PR':'Sul','RS':'Sul','SC':'Sul'};
+function getRegiao(e){return REGIOES[e]||'Outros';}
+const PLANO_MAP={'1':'Essencial','2':'Exclusivo','3':'Plus'};
+function getPlano(r){const p=fv(r,'Plano','PlanoLookupId');return PLANO_MAP[p]||p||'N/D';}
 
-// ═══════════════════════════════════
-// DATA PROCESSING
-// ═══════════════════════════════════
-function countBy(arr, fn) {
-  const m = {};
-  arr.forEach(r => { const k = fn(r)||'N/D'; m[k]=(m[k]||0)+1; });
-  return m;
-}
-function topN(obj, n) {
-  return Object.fromEntries(Object.entries(obj).filter(([k])=>k&&k!=='N/D'&&k!=='').sort((a,b)=>b[1]-a[1]).slice(0,n));
-}
-function buildFlow(arr, getE, getS, periods) {
-  return {
-    entradas: periods.map(p => arr.filter(r => getE(r)===p).length),
-    saidas:   periods.map(p => arr.filter(r => getS(r)===p).length)
-  };
-}
-function buildCumulative(entradas, saidas) {
-  let cum = 0;
-  return entradas.map((e,i) => { cum += e - saidas[i]; return cum; });
-}
-function calcChurn(arr, getE, getS, periods) {
-  const last = periods[periods.length-1];
-  const prev = periods[periods.length-2];
-  const saidasLast = arr.filter(r => getS(r)===last).length;
-  const ativosAtual = arr.filter(r => {
-    const sit = getSituacao(r); return ['ATIVO','ATIVA'].includes(sit);
-  }).length;
-  const ativosPrev = ativosAtual + saidasLast; // aproximação
-  return ativosPrev > 0 ? ((saidasLast / ativosPrev) * 100).toFixed(1) : '0.0';
-}
+// DATA
+function countBy(arr,fn){const m={};arr.forEach(r=>{const k=fn(r)||'N/D';m[k]=(m[k]||0)+1;});return m;}
+function topN(obj,n){return Object.fromEntries(Object.entries(obj).filter(([k])=>k&&k!=='N/D'&&k!=='').sort((a,b)=>b[1]-a[1]).slice(0,n));}
+function buildFlow(arr,getE,getS,periods){return{entradas:periods.map(p=>arr.filter(r=>getE(r)===p).length),saidas:periods.map(p=>arr.filter(r=>getS(r)===p).length)};}
+function buildCumulative(entradas,saidas){let c=0;return entradas.map((e,i)=>{c+=e-saidas[i];return c;});}
 
-// ═══════════════════════════════════
 // FILTERS
-// ═══════════════════════════════════
-function applyFilters() {
-  const sit = (document.getElementById('f-situacao').value||'').toUpperCase();
-  const reg = document.getElementById('f-regime').value||'';
-  let fc = rawContab, ft = rawTech;
-  if (sit) { fc = fc.filter(r => getSituacao(r)===sit); ft = ft.filter(r => getSituacao(r)===sit); }
-  if (reg) { fc = fc.filter(r => getRegime(r).includes(reg)); ft = ft.filter(r => getRegime(r).includes(reg)); }
-  renderGeral(fc, ft);
-  renderTech(ft);
-  renderContab(fc);
+function applyFilters(){
+  const sit=(document.getElementById('f-situacao').value||'').toUpperCase();
+  const reg=document.getElementById('f-regime').value||'';
+  let fc=rawContab,ft=rawTech;
+  if(sit){fc=fc.filter(r=>getSituacao(r)===sit);ft=ft.filter(r=>getSituacao(r)===sit);}
+  if(reg){fc=fc.filter(r=>getRegime(r).includes(reg));ft=ft.filter(r=>getRegime(r).includes(reg));}
+  renderGeral(fc,ft);renderTech(ft);renderContab(fc);
 }
-function clearFilters() {
-  document.getElementById('f-situacao').value='';
-  document.getElementById('f-regime').value='';
-  applyFilters();
+function clearFilters(){document.getElementById('f-situacao').value='';document.getElementById('f-regime').value='';applyFilters();}
+
+// FORMATTERS
+function fmtBRL(v){return v>=1000?'R$ '+Math.round(v/1000)+'k':'R$ '+Math.round(v).toLocaleString('pt-BR');}
+function fmtM(v){return'R$ '+(v/1000000).toFixed(2)+'M';}
+function pct(real,meta){return meta>0?Math.min(100,Math.round(real/meta*100)):0;}
+function pctColor(p){return p>=100?'#1a7a3a':p>=70?'#BA7517':'#F62642';}
+
+// META VS REALIZADO WIDGET
+function renderMVR(containerId, items) {
+  const el=document.getElementById(containerId); if(!el) return;
+  el.innerHTML=items.map(item=>{
+    const p=pct(item.real,item.meta);
+    const cor=pctColor(p);
+    return`<div class="mvr-card">
+      <div class="mvr-title">${item.title}</div>
+      <div class="mvr-row">
+        <span class="mvr-label">Realizado</span>
+        <span class="mvr-real" style="font-size:16px;font-weight:600;color:${cor}">${item.realFmt}</span>
+      </div>
+      <div class="mvr-row">
+        <span class="mvr-label">Meta 2026</span>
+        <span class="mvr-meta">${item.metaFmt}</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" style="width:${p}%;background:${cor}"></div></div>
+        <div class="progress-pct" style="color:${cor}">${p}% da meta atingida</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-// ═══════════════════════════════════
-// RENDER KPIs
-// ═══════════════════════════════════
-function renderKPIs(id, cards) {
-  document.getElementById(id).innerHTML = cards.map(c =>
-    `<div class="kpi ${c.acc||''}"><div class="kl">${c.label}</div><div class="kv ${c.vc||''}">${c.value}</div><div class="ks">${c.sub}</div></div>`
-  ).join('');
-}
-function fmtBRL(v) { return v>=1000 ? 'R$ '+Math.round(v/1000)+'k' : 'R$ '+Math.round(v).toLocaleString('pt-BR'); }
-function fmtNum(v) { return v.toLocaleString('pt-BR'); }
-
-function renderGeral(fc, ft) {
-  const ativosC = fc.filter(r => getSituacao(r)==='ATIVO');
-  const ativosT = ft.filter(r => getSituacao(r)==='ATIVO');
-  const total = fc.length + ft.length;
-  const ativos = ativosC.length + ativosT.length;
-  const honC = ativosC.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
-  const recT = ativosT.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
-  const mrr = honC + recT;
-  const inativos = fc.filter(r=>getSituacao(r)==='INATIVO').length + ft.filter(r=>getSituacao(r)==='INATIVO').length;
-  const baixadas = fc.filter(r=>getSituacao(r)==='BAIXADA').length + ft.filter(r=>getSituacao(r)==='BAIXADA').length;
-  const cancelamentos = ft.filter(r=>getSituacao(r)==='EM CANCELAMENTO').length;
-  const suspensos = fc.filter(r=>getSituacao(r)==='SUSPENSO').length + ft.filter(r=>getSituacao(r)==='SUSPENSO').length;
-
-  // Flow for last month
-  const flowC = buildFlow(rawContab, getEntradaYM_contab, getSaidaYM_contab, ALL_PERIODS);
-  const flowT = buildFlow(rawTech, getEntradaYM_tech, getSaidaYM_tech, ALL_PERIODS);
-  const lastE = flowC.entradas[flowC.entradas.length-1] + flowT.entradas[flowT.entradas.length-1];
-  const lastS = flowC.saidas[flowC.saidas.length-1] + flowT.saidas[flowT.saidas.length-1];
+// RENDER GERAL
+function renderGeral(fc,ft){
+  const ativosC=fc.filter(r=>getSituacao(r)==='ATIVO');
+  const ativosT=ft.filter(r=>getSituacao(r)==='ATIVO');
+  const total=fc.length+ft.length, ativos=ativosC.length+ativosT.length;
+  const honC=ativosC.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
+  const recT=ativosT.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
+  const mrr=honC+recT;
+  const flowC=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,ALL_PERIODS);
+  const flowT=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,ALL_PERIODS);
+  const lastE=flowC.entradas[flowC.entradas.length-1]+flowT.entradas[flowT.entradas.length-1];
+  const lastS=flowC.saidas[flowC.saidas.length-1]+flowT.saidas[flowT.saidas.length-1];
+  const inativos=fc.filter(r=>getSituacao(r)==='INATIVO').length+ft.filter(r=>getSituacao(r)==='INATIVO').length;
+  const baixadas=fc.filter(r=>getSituacao(r)==='BAIXADA').length+ft.filter(r=>getSituacao(r)==='BAIXADA').length;
 
   renderKPIs('kpi-geral',[
-    {label:'Total de Clientes', value:fmtNum(total), sub:'Contab + Tech'},
-    {label:'Clientes Ativos', value:fmtNum(ativos), acc:'r', sub:total?Math.round(ativos/total*100)+'% do total':'–'},
-    {label:'MRR Consolidado', value:fmtBRL(mrr), acc:'tl', sub:'Honorários + mensalidades'},
-    {label:'Ticket Médio Geral', value:fmtBRL(ativos?mrr/ativos:0), acc:'nv', sub:'Por cliente ativo'},
-    {label:'Entradas (último mês)', value:fmtNum(lastE), acc:'', vc:'green', sub:'Novos contratos'},
-    {label:'Saídas (último mês)', value:fmtNum(lastS), acc:'r', vc:'red', sub:'Inativos + Baixadas'},
-    {label:'Inativos Total', value:fmtNum(inativos), acc:'am', sub:'Aguardando reativação'},
-    {label:'Baixadas Total', value:fmtNum(baixadas), acc:'nv', sub:'Empresas encerradas'},
+    {label:'Total de Clientes',value:total,sub:'Contab + Tech'},
+    {label:'Clientes Ativos',value:ativos,acc:'r',sub:total?Math.round(ativos/total*100)+'% do total':'–'},
+    {label:'MRR Consolidado',value:fmtBRL(mrr),acc:'tl',sub:'Honorários + mensalidades'},
+    {label:'Ticket Médio Geral',value:fmtBRL(ativos?mrr/ativos:0),acc:'nv',sub:'Por cliente ativo'},
+    {label:'Entradas último mês',value:lastE,vc:'green',sub:'Novos contratos'},
+    {label:'Saídas último mês',value:lastS,acc:'r',vc:'red',sub:'Cancelamentos'},
+    {label:'Inativos Total',value:inativos,acc:'am',sub:'Aguardando reativação'},
+    {label:'Baixadas Total',value:baixadas,acc:'nv',sub:'Empresas encerradas'},
+  ]);
+
+  // MVR GERAL
+  const fatAnualProj=mrr*12;
+  renderMVR('mvr-geral',[
+    {title:'Clientes Ativos',real:ativos,meta:META.ativos_total,realFmt:ativos,metaFmt:META.ativos_total},
+    {title:'Entradas (acum. 2026)',real:flowC.entradas.filter((_,i)=>ALL_PERIODS[i]>='2026-01').reduce((a,b)=>a+b,0)+flowT.entradas.filter((_,i)=>ALL_PERIODS[i]>='2026-01').reduce((a,b)=>a+b,0),meta:META.entradas_total,realFmt:'(aguardando 2026)',metaFmt:META.entradas_total+' contratos'},
+    {title:'MRR Consolidado',real:Math.round(mrr),meta:META.mrr_contab+META.mrr_tech,realFmt:fmtBRL(mrr),metaFmt:fmtBRL(META.mrr_contab+META.mrr_tech)},
+    {title:'Faturamento Anual (proj.)',real:Math.round(fatAnualProj),meta:META.fat_total,realFmt:fmtM(fatAnualProj),metaFmt:fmtM(META.fat_total)},
   ]);
 
   // Evolução
-  const cumC = buildCumulative(flowC.entradas, flowC.saidas);
-  const cumT = buildCumulative(flowT.entradas, flowT.saidas);
-  const cumTotal = cumC.map((v,i)=>v+cumT[i]);
-  mkLineEvolucao('c-geral-evolucao', ALL_LABELS, [
-    {label:'Tech', data:cumT, color:'#0C7488'},
-    {label:'Contabilidade', data:cumC, color:'#F62642'},
-    {label:'Total', data:cumTotal, color:'#0E1428', dash:true},
+  const cumC=buildCumulative(flowC.entradas,flowC.saidas);
+  const cumT=buildCumulative(flowT.entradas,flowT.saidas);
+  const cumTotal=cumC.map((v,i)=>v+cumT[i]);
+  // Meta 2026 acumulada
+  const metaAcum=[489];
+  const metaE=[40,30,18,39,24,32,61,50,47,32,35,66];
+  for(let i=0;i<11;i++) metaAcum.push(metaAcum[i]+metaE[i]-META_S_MENSAL[i]);
+  const labelsComMeta=[...ALL_LABELS,'Jan/26','Fev/26','Mar/26','Abr/26','Mai/26','Jun/26','Jul/26','Ago/26','Set/26','Out/26','Nov/26','Dez/26'];
+  const cumTotalComMeta=[...cumTotal,...Array(12).fill(null)];
+  const cumCComMeta=[...cumC,...Array(12).fill(null)];
+  const cumTComMeta=[...cumT,...Array(12).fill(null)];
+  const metaLine=[...Array(ALL_PERIODS.length).fill(null),...metaAcum];
+
+  mkLineMulti('c-geral-evolucao',labelsComMeta,[
+    {label:'Tech',data:cumTComMeta,color:'#0C7488',dash:false},
+    {label:'Contabilidade',data:cumCComMeta,color:'#F62642',dash:false},
+    {label:'Total',data:cumTotalComMeta,color:'#0E1428',dash:false},
+    {label:'Meta 2026',data:metaLine,color:'#BA7517',dash:true},
   ]);
 
-  // Flow last 12
-  const e12C = flowC.entradas.slice(LAST12_IDX), s12C = flowC.saidas.slice(LAST12_IDX);
-  const e12T = flowT.entradas.slice(LAST12_IDX), s12T = flowT.saidas.slice(LAST12_IDX);
-  mkFlowConsolidado('c-geral-flow', LAST12_LABELS, e12C, e12T, s12C, s12T);
+  const e12C=flowC.entradas.slice(LAST12),s12C=flowC.saidas.slice(LAST12);
+  const e12T=flowT.entradas.slice(LAST12),s12T=flowT.saidas.slice(LAST12);
+  mkFlowConsolidado('c-geral-flow',ALL_LABELS.slice(LAST12),e12C,e12T,s12C,s12T);
+  const saldo12=e12C.map((e,i)=>(e+e12T[i])-(s12C[i]+s12T[i]));
+  mkSaldoBar('c-geral-saldo',ALL_LABELS.slice(LAST12),saldo12);
+  setInsight('insight-geral',saldo12);
 
-  const saldo12 = e12C.map((e,i)=>(e+e12T[i])-(s12C[i]+s12T[i]));
-  mkSaldoBar('c-geral-saldo', LAST12_LABELS, saldo12);
-  setInsight('insight-saldo-geral', saldo12);
-
-  // Receita, Status, Origem
-  mkDoughnut('c-geral-receita', {'Contabilidade':Math.round(honC/1000),'Lucralize Tech':Math.round(recT/1000)}, 'leg-geral-receita', true);
-  mkDoughnut('c-geral-status', countBy([...fc,...ft], r=>capFirst(getSituacao(r))), 'leg-geral-status');
-  const origemAll = {};
-  [...fc,...ft].forEach(r => {
-    const o = fv(r,'Origem_x0020_','Origem ','Origem')||'N/D';
-    if (o&&o!=='N/D') origemAll[o]=(origemAll[o]||0)+1;
-  });
-  mkHBar('c-geral-origem', topN(origemAll,8), '#0C7488');
-
-  // Geo
-  renderGeo('geral', [...fc,...ft]);
+  mkDoughnut('c-geral-receita',{'Contabilidade':Math.round(honC/1000),'Lucralize Tech':Math.round(recT/1000)},'leg-geral-receita',true);
+  mkDoughnut('c-geral-status',countBy([...fc,...ft],r=>capFirst(getSituacao(r))),'leg-geral-status');
+  const origemAll={};
+  [...fc,...ft].forEach(r=>{const o=fv(r,'Origem_x0020_','Origem ','Origem')||'N/D';if(o&&o!=='N/D')origemAll[o]=(origemAll[o]||0)+1;});
+  mkHBar('c-geral-origem',topN(origemAll,8),'#0C7488');
+  renderGeo('geral',[...fc,...ft]);
 }
 
-function renderTech(ft) {
-  const ativos = ft.filter(r => getSituacao(r)==='ATIVO');
-  const rec = ativos.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
-  const inativos = ft.filter(r=>getSituacao(r)==='INATIVO').length;
-  const baixadas = ft.filter(r=>getSituacao(r)==='BAIXADA').length;
-
-  const flowT = buildFlow(rawTech, getEntradaYM_tech, getSaidaYM_tech, ALL_PERIODS);
-  const lastE = flowT.entradas[flowT.entradas.length-1];
-  const lastS = flowT.saidas[flowT.saidas.length-1];
-  const churn = calcChurn(rawTech, getEntradaYM_tech, getSaidaYM_tech, ALL_PERIODS);
+function renderTech(ft){
+  const ativos=ft.filter(r=>getSituacao(r)==='ATIVO');
+  const rec=ativos.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
+  const inativos=ft.filter(r=>getSituacao(r)==='INATIVO').length;
+  const baixadas=ft.filter(r=>getSituacao(r)==='BAIXADA').length;
+  const flowT=buildFlow(rawTech,getEntradaYM_tech,getSaidaYM_tech,ALL_PERIODS);
+  const lastE=flowT.entradas[flowT.entradas.length-1];
+  const lastS=flowT.saidas[flowT.saidas.length-1];
 
   renderKPIs('kpi-tech',[
-    {label:'Total Tech', value:fmtNum(ft.length), sub:'na base filtrada'},
-    {label:'Ativos', value:fmtNum(ativos.length), acc:'r', sub:ft.length?Math.round(ativos.length/ft.length*100)+'% do total':'–'},
-    {label:'MRR', value:fmtBRL(rec), acc:'tl', sub:'Clientes ativos'},
-    {label:'Ticket Médio', value:'R$ '+(ativos.length?Math.round(rec/ativos.length).toLocaleString('pt-BR'):'0'), acc:'nv', sub:'Por ativo'},
-    {label:'Entradas (último mês)', value:fmtNum(lastE), vc:'green', sub:'Novos contratos'},
-    {label:'Saídas (último mês)', value:fmtNum(lastS), acc:'r', vc:'red', sub:'Cancelamentos'},
-    {label:'Inativos', value:fmtNum(inativos), acc:'am', sub:'Aguardando reativação'},
-    {label:'Baixadas', value:fmtNum(baixadas), acc:'nv', sub:'Encerradas'},
+    {label:'Total Tech',value:ft.length,sub:'na base filtrada'},
+    {label:'Ativos',value:ativos.length,acc:'r',sub:ft.length?Math.round(ativos.length/ft.length*100)+'% do total':'–'},
+    {label:'MRR',value:fmtBRL(rec),acc:'tl',sub:'Clientes ativos'},
+    {label:'Ticket Médio',value:'R$ '+(ativos.length?Math.round(rec/ativos.length).toLocaleString('pt-BR'):'0'),acc:'nv',sub:'Por ativo'},
+    {label:'Entradas último mês',value:lastE,vc:'green',sub:'Novos contratos'},
+    {label:'Saídas último mês',value:lastS,acc:'r',vc:'red',sub:'Cancelamentos'},
+    {label:'Inativos',value:inativos,acc:'am',sub:'Aguardando reativação'},
+    {label:'Baixadas',value:baixadas,acc:'nv',sub:'Encerradas'},
   ]);
 
-  const cumT = buildCumulative(flowT.entradas, flowT.saidas);
-  mkLineEvolucao('c-tech-evolucao', ALL_LABELS, [
-    {label:'Ativos acumulados', data:cumT, color:'#0C7488'},
-    {label:'Entradas', data:flowT.entradas, color:'#91DBE4', bar:true},
-    {label:'Saídas', data:flowT.saidas.map(v=>-v), color:'#F62642', bar:true},
+  renderMVR('mvr-tech',[
+    {title:'Clientes Ativos',real:ativos.length,meta:META.ativos_tech,realFmt:ativos.length,metaFmt:META.ativos_tech},
+    {title:'MRR Tech',real:Math.round(rec),meta:META.mrr_tech,realFmt:fmtBRL(rec),metaFmt:fmtBRL(META.mrr_tech)},
+    {title:'Ticket Médio',real:ativos.length?Math.round(rec/ativos.length):0,meta:META.ticket_tech,realFmt:'R$ '+(ativos.length?Math.round(rec/ativos.length):0),metaFmt:'R$ '+META.ticket_tech},
+    {title:'Faturamento Anual (proj.)',real:Math.round(rec*12),meta:META.fat_tech,realFmt:fmtM(rec*12),metaFmt:fmtM(META.fat_tech)},
   ]);
 
-  const e12 = flowT.entradas.slice(LAST12_IDX), s12 = flowT.saidas.slice(LAST12_IDX);
-  mkFlowBar('c-tech-flow', LAST12_LABELS, e12, s12);
-  const saldo12 = e12.map((e,i)=>e-s12[i]);
-  mkSaldoBar('c-tech-saldo', LAST12_LABELS, saldo12);
-  setInsight('insight-saldo-tech', saldo12);
+  const cumT=buildCumulative(flowT.entradas,flowT.saidas);
+  const metaT=[...Array(ALL_PERIODS.length).fill(null)];
+  mkLineMulti('c-tech-evolucao',ALL_LABELS,[
+    {label:'Ativos acumulados',data:cumT,color:'#0C7488',dash:false},
+    {label:'Entradas',data:flowT.entradas,color:'#91DBE4',bar:true},
+    {label:'Saídas',data:flowT.saidas.map(v=>-v),color:'#F62642',bar:true},
+  ]);
 
-  mkDoughnut('c-tech-status', countBy(ft, r=>capFirst(getSituacao(r))), 'leg-tech-status');
-  mkDoughnut('c-tech-plano', countBy(ft, r=>getPlano(r)), 'leg-tech-plano');
-  mkDoughnut('c-tech-regime', countBy(ft, r=>getRegime(r)), 'leg-tech-regime');
-  mkDoughnut('c-tech-tipo', countBy(ft, r=>fv(r,'TipodeEntrada','Tipo_x0020_de_x0020_Entrada','Tipo de Entrada')), 'leg-tech-tipo');
-  mkHBar('c-tech-motivo', topN(countBy(ft, r=>fv(r,'Motivo_x0020_da_x0020_Sa_x00ed_da','Motivo da Saída','MotivoDaSaída')),8), '#F62642');
-  mkDoughnut('c-tech-resp', countBy(ft, r=>fv(r,'Respons_x00e1_vel_x0028_Escolha_x0029_','Respons_x00e1_vel_x0028_Escolha_','Respons_x00e1_vel','Responsável')), 'leg-tech-resp');
-  mkHBar('c-tech-origem', topN(countBy(ft, r=>fv(r,'Origem')),10), '#0C7488');
-  renderGeo('tech', ft);
+  const e12=flowT.entradas.slice(LAST12),s12=flowT.saidas.slice(LAST12);
+  mkFlowBar('c-tech-flow',ALL_LABELS.slice(LAST12),e12,s12);
+  mkSaldoBar('c-tech-saldo',ALL_LABELS.slice(LAST12),e12.map((e,i)=>e-s12[i]));
+  setInsight('insight-tech',e12.map((e,i)=>e-s12[i]));
+
+  mkDoughnut('c-tech-status',countBy(ft,r=>capFirst(getSituacao(r))),'leg-tech-status');
+  mkDoughnut('c-tech-plano',countBy(ft,r=>getPlano(r)),'leg-tech-plano');
+  mkDoughnut('c-tech-regime',countBy(ft,r=>getRegime(r)),'leg-tech-regime');
+  mkDoughnut('c-tech-tipo',countBy(ft,r=>fv(r,'TipodeEntrada','Tipo_x0020_de_x0020_Entrada','Tipo de Entrada')),'leg-tech-tipo');
+  mkHBar('c-tech-motivo',topN(countBy(ft,r=>fv(r,'Motivo_x0020_da_x0020_Sa_x00ed_da','Motivo da Saída','MotivoDaSaída')),8),'#F62642');
+  mkDoughnut('c-tech-resp',countBy(ft,r=>fv(r,'Respons_x00e1_vel_x0028_Escolha_x0029_','Respons_x00e1_vel_x0028_Escolha_','Respons_x00e1_vel','Responsável')),'leg-tech-resp');
+  mkHBar('c-tech-origem',topN(countBy(ft,r=>fv(r,'Origem')),10),'#0C7488');
+  renderGeo('tech',ft);
 }
 
-function renderContab(fc) {
-  const ativos = fc.filter(r => getSituacao(r)==='ATIVO');
-  const hon = ativos.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
-  const inativos = fc.filter(r=>getSituacao(r)==='INATIVO').length;
-  const baixadas = fc.filter(r=>getSituacao(r)==='BAIXADA').length;
-
-  const flowC = buildFlow(rawContab, getEntradaYM_contab, getSaidaYM_contab, ALL_PERIODS);
-  const lastE = flowC.entradas[flowC.entradas.length-1];
-  const lastS = flowC.saidas[flowC.saidas.length-1];
+function renderContab(fc){
+  const ativos=fc.filter(r=>getSituacao(r)==='ATIVO');
+  const hon=ativos.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
+  const inativos=fc.filter(r=>getSituacao(r)==='INATIVO').length;
+  const baixadas=fc.filter(r=>getSituacao(r)==='BAIXADA').length;
+  const flowC=buildFlow(rawContab,getEntradaYM_contab,getSaidaYM_contab,ALL_PERIODS);
+  const lastE=flowC.entradas[flowC.entradas.length-1];
+  const lastS=flowC.saidas[flowC.saidas.length-1];
 
   renderKPIs('kpi-cont',[
-    {label:'Total Contabilidade', value:fmtNum(fc.length), sub:'na base filtrada'},
-    {label:'Ativos', value:fmtNum(ativos.length), acc:'r', sub:fc.length?Math.round(ativos.length/fc.length*100)+'% do total':'–'},
-    {label:'Honorários/Mês', value:fmtBRL(hon), acc:'tl', sub:'Clientes ativos'},
-    {label:'Ticket Médio', value:'R$ '+(ativos.length?Math.round(hon/ativos.length).toLocaleString('pt-BR'):'0'), acc:'nv', sub:'Por ativo'},
-    {label:'Entradas (último mês)', value:fmtNum(lastE), vc:'green', sub:'Novos contratos'},
-    {label:'Saídas (último mês)', value:fmtNum(lastS), acc:'r', vc:'red', sub:'Cancelamentos'},
-    {label:'Inativos', value:fmtNum(inativos), acc:'am', sub:'Aguardando reativação'},
-    {label:'Baixadas', value:fmtNum(baixadas), acc:'nv', sub:'Encerradas'},
+    {label:'Total Contabilidade',value:fc.length,sub:'na base filtrada'},
+    {label:'Ativos',value:ativos.length,acc:'r',sub:fc.length?Math.round(ativos.length/fc.length*100)+'% do total':'–'},
+    {label:'Honorários/Mês',value:fmtBRL(hon),acc:'tl',sub:'Clientes ativos'},
+    {label:'Ticket Médio',value:'R$ '+(ativos.length?Math.round(hon/ativos.length).toLocaleString('pt-BR'):'0'),acc:'nv',sub:'Por ativo'},
+    {label:'Entradas último mês',value:lastE,vc:'green',sub:'Novos contratos'},
+    {label:'Saídas último mês',value:lastS,acc:'r',vc:'red',sub:'Cancelamentos'},
+    {label:'Inativos',value:inativos,acc:'am',sub:'Aguardando reativação'},
+    {label:'Baixadas',value:baixadas,acc:'nv',sub:'Encerradas'},
   ]);
 
-  const cumC = buildCumulative(flowC.entradas, flowC.saidas);
-  mkLineEvolucao('c-cont-evolucao', ALL_LABELS, [
-    {label:'Ativos acumulados', data:cumC, color:'#F62642'},
-    {label:'Entradas', data:flowC.entradas, color:'#0C7488', bar:true},
-    {label:'Saídas', data:flowC.saidas.map(v=>-v), color:'#0E1428', bar:true},
+  renderMVR('mvr-cont',[
+    {title:'Clientes Ativos',real:ativos.length,meta:META.ativos_contab,realFmt:ativos.length,metaFmt:META.ativos_contab},
+    {title:'MRR Contabilidade',real:Math.round(hon),meta:META.mrr_contab,realFmt:fmtBRL(hon),metaFmt:fmtBRL(META.mrr_contab)},
+    {title:'Ticket Médio',real:ativos.length?Math.round(hon/ativos.length):0,meta:META.ticket_contab,realFmt:'R$ '+(ativos.length?Math.round(hon/ativos.length):0),metaFmt:'R$ '+META.ticket_contab},
+    {title:'Faturamento Anual (proj.)',real:Math.round(hon*12),meta:META.fat_contab,realFmt:fmtM(hon*12),metaFmt:fmtM(META.fat_contab)},
   ]);
 
-  const e12 = flowC.entradas.slice(LAST12_IDX), s12 = flowC.saidas.slice(LAST12_IDX);
-  mkFlowBar('c-cont-flow', LAST12_LABELS, e12, s12);
-  const saldo12 = e12.map((e,i)=>e-s12[i]);
-  mkSaldoBar('c-cont-saldo', LAST12_LABELS, saldo12);
-  setInsight('insight-saldo-cont', saldo12);
+  const cumC=buildCumulative(flowC.entradas,flowC.saidas);
+  mkLineMulti('c-cont-evolucao',ALL_LABELS,[
+    {label:'Ativos acumulados',data:cumC,color:'#F62642',dash:false},
+    {label:'Entradas',data:flowC.entradas,color:'#0C7488',bar:true},
+    {label:'Saídas',data:flowC.saidas.map(v=>-v),color:'#0E1428',bar:true},
+  ]);
 
-  mkDoughnut('c-cont-status', countBy(fc, r=>capFirst(getSituacao(r))), 'leg-cont-status');
-  mkDoughnut('c-cont-class', countBy(fc, r=>fv(r,'Classifica_x00e7__x00e3_o','Classificação','Classificacao')), 'leg-cont-class');
-  mkDoughnut('c-cont-regime', countBy(fc, r=>getRegime(r)), 'leg-cont-regime');
-  mkDoughnut('c-cont-tipo', countBy(fc, r=>fv(r,'Tipo_x0020_de_x0020_entrada','Tipo de entrada','TipoDeEntrada')), 'leg-cont-tipo');
-  mkHBar('c-cont-motivo', topN(countBy(fc, r=>fv(r,'Motivo_x0020_da_x0020_Sa_x00ed_da','Motivo da Saída','MotivoDaSaída')),8), '#F62642');
-  mkHBar('c-cont-resp', topN(countBy(fc, r=>fv(r,'Respons_x00e1_vel_x0020_Cont_x00e1_bil','Responsável Contábil','ResponsávelContábil')),8), '#91DBE4');
-  mkDoughnut('c-cont-nucleo', countBy(fc, r=>fv(r,'N_x00fa_cleo','Núcleo','Nucleo')), 'leg-cont-nucleo');
-  mkDoughnut('c-cont-carteira', countBy(fc, r=>fv(r,'CarteiraGS_x0020_Escolha_x0029_','CarteiraGS_x0020_Escolha_x0029','Carteira GS')), 'leg-cont-carteira');
-  mkHBar('c-cont-origem', topN(countBy(fc, r=>fv(r,'Origem_x0020_','Origem ','Origem')),10), '#0C7488');
-  renderGeo('cont', fc);
+  const e12=flowC.entradas.slice(LAST12),s12=flowC.saidas.slice(LAST12);
+  mkFlowBar('c-cont-flow',ALL_LABELS.slice(LAST12),e12,s12);
+  mkSaldoBar('c-cont-saldo',ALL_LABELS.slice(LAST12),e12.map((e,i)=>e-s12[i]));
+  setInsight('insight-cont',e12.map((e,i)=>e-s12[i]));
+
+  mkDoughnut('c-cont-status',countBy(fc,r=>capFirst(getSituacao(r))),'leg-cont-status');
+  mkDoughnut('c-cont-class',countBy(fc,r=>fv(r,'Classifica_x00e7__x00e3_o','Classificação','Classificacao')),'leg-cont-class');
+  mkDoughnut('c-cont-regime',countBy(fc,r=>getRegime(r)),'leg-cont-regime');
+  mkDoughnut('c-cont-tipo',countBy(fc,r=>fv(r,'Tipo_x0020_de_x0020_entrada','Tipo de entrada','TipoDeEntrada')),'leg-cont-tipo');
+  mkHBar('c-cont-motivo',topN(countBy(fc,r=>fv(r,'Motivo_x0020_da_x0020_Sa_x00ed_da','Motivo da Saída','MotivoDaSaída')),8),'#F62642');
+  mkHBar('c-cont-resp',topN(countBy(fc,r=>fv(r,'Respons_x00e1_vel_x0020_Cont_x00e1_bil','Responsável Contábil','ResponsávelContábil')),8),'#91DBE4');
+  mkDoughnut('c-cont-nucleo',countBy(fc,r=>fv(r,'N_x00fa_cleo','Núcleo','Nucleo')),'leg-cont-nucleo');
+  mkDoughnut('c-cont-carteira',countBy(fc,r=>fv(r,'CarteiraGS_x0020_Escolha_x0029_','CarteiraGS_x0020_Escolha_x0029','Carteira GS')),'leg-cont-carteira');
+  mkHBar('c-cont-origem',topN(countBy(fc,r=>fv(r,'Origem_x0020_','Origem ','Origem')),10),'#0C7488');
+  renderGeo('cont',fc);
 }
 
-function renderGeo(prefix, arr) {
-  const byReg = countBy(arr, r => getRegiao(getEstado(r)));
-  const byEst = topN(countBy(arr, r => { const e=getEstado(r); return (e&&e!=='N/D')?e:null; }), 10);
-  mkDoughnut(`c-${prefix}-regiao`, byReg, `leg-${prefix}-regiao`);
-  mkHBar(`c-${prefix}-estado`, byEst, '#0C7488');
+function renderGeo(prefix,arr){
+  const byReg=countBy(arr,r=>getRegiao(getEstado(r)));
+  const byEst=topN(countBy(arr,r=>{const e=getEstado(r);return(e&&e!=='N/D')?e:null;}),10);
+  mkDoughnut(`c-${prefix}-regiao`,byReg,`leg-${prefix}-regiao`);
+  mkHBar(`c-${prefix}-estado`,byEst,'#0C7488');
 }
 
-// ═══════════════════════════════════
+// CRESCIMENTO TAB
+function renderCrescimento(){
+  // Tabela
+  const anos=HIST.anos;
+  const rows=[
+    {label:'Número de Clientes (ativos)',vals:anos.map((_,i)=>HIST.ativos_c[i]+HIST.ativos_t[i]),fmt:v=>v,pct:true},
+    {label:'— Contabilidade',vals:HIST.ativos_c,fmt:v=>v,sub:true},
+    {label:'— Lucralize Tech',vals:HIST.ativos_t,fmt:v=>v,sub:true},
+    {label:'Entradas (novos contratos)',vals:anos.map((_,i)=>HIST.entradas_c[i]+HIST.entradas_t[i]),fmt:v=>v,pct:true},
+    {label:'— Contabilidade',vals:HIST.entradas_c,fmt:v=>v,sub:true},
+    {label:'— Lucralize Tech',vals:HIST.entradas_t,fmt:v=>v,sub:true},
+    {label:'Saídas (cancelamentos)',vals:anos.map((_,i)=>HIST.saidas_c[i]+HIST.saidas_t[i]),fmt:v=>v,pct:true},
+    {label:'— Contabilidade',vals:HIST.saidas_c,fmt:v=>v,sub:true},
+    {label:'— Lucralize Tech',vals:HIST.saidas_t,fmt:v=>v,sub:true},
+    {label:'Faturamento Anual',vals:HIST.fat,fmt:v=>'R$ '+(v/1000000).toFixed(2)+'M',pct:true},
+  ];
+
+  const thead=`<thead><tr><th style="text-align:left;width:200px">Estatística</th>${anos.map((a,i)=>`<th${i===5?' class="col-2026"':''}>${a}${i===5?' (meta)':''}</th>`).join('')}</tr></thead>`;
+  const tbody=rows.map(row=>{
+    const cells=row.vals.map((v,i)=>{
+      let pctStr='';
+      if(row.pct&&i>0){
+        const prev=row.vals[i-1];
+        const diff=prev>0?Math.round((v-prev)/prev*100):0;
+        const cls=diff>=0?'up':'dn';
+        pctStr=`<br><span class="pct ${cls}">${diff>=0?'+':''}${diff}%</span>`;
+      }
+      return`<td${i===5?' class="col-2026"':''}>${row.fmt(v)}${pctStr}</td>`;
+    }).join('');
+    return`<tr class="${row.sub?'subrow':''}"><td>${row.label}</td>${cells}</tr>`;
+  }).join('');
+
+  document.getElementById('tabela-crescimento').innerHTML=thead+`<tbody>${tbody}</tbody>`;
+
+  // Gráficos
+  const totAtivos=anos.map((_,i)=>HIST.ativos_c[i]+HIST.ativos_t[i]);
+  mkBarAno('c-cresc-clientes',anos,totAtivos,'#0C7488','Clientes ativos');
+  mkBarAno('c-cresc-fat',anos,HIST.fat.map(v=>Math.round(v/1000)),'#F62642','Faturamento (R$k)');
+
+  const totE=anos.map((_,i)=>HIST.entradas_c[i]+HIST.entradas_t[i]);
+  const totS=anos.map((_,i)=>HIST.saidas_c[i]+HIST.saidas_t[i]);
+  destroyChart('c-cresc-fluxo');
+  const ctx=document.getElementById('c-cresc-fluxo');
+  if(ctx) charts['c-cresc-fluxo']=new Chart(ctx,{type:'bar',data:{labels:anos,datasets:[
+    {label:'Entradas',data:totE,backgroundColor:'#0C7488',borderRadius:4,borderSkipped:false},
+    {label:'Saídas',data:totS.map(v=>-v),backgroundColor:'#F62642',borderRadius:4,borderSkipped:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${Math.abs(c.raw)}`}},datalabels_custom:{enabled:true}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#888'}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:11},color:'#888',callback:v=>Math.abs(v)}}}}});
+
+  // Crescimento %
+  const pcts=totAtivos.map((v,i)=>i===0?0:Math.round((v-totAtivos[i-1])/totAtivos[i-1]*100));
+  destroyChart('c-cresc-pct');
+  const ctx2=document.getElementById('c-cresc-pct');
+  if(ctx2) charts['c-cresc-pct']=new Chart(ctx2,{type:'bar',data:{labels:anos,datasets:[{data:pcts,backgroundColor:pcts.map(v=>v>=0?'#0C7488':'#F62642'),borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels_custom:{enabled:true,suffix:'%'}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#888'}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:11},color:'#888',callback:v=>v+'%'}}}}});
+
+  // Sazonalidade
+  renderSazonalidade();
+  renderProjecao2026();
+}
+
+function renderSazonalidade(){
+  const grid=document.getElementById('saz-inputs');
+  if(!grid.children.length){
+    MESES_LABEL.forEach((m,i)=>{
+      const wrap=document.createElement('div');
+      wrap.style.cssText='display:flex;flex-direction:column;align-items:center;gap:3px';
+      wrap.innerHTML=`<label style="font-size:10px;color:var(--g1);font-weight:500">${m}</label><input type="number" min="0" max="30" step="0.1" value="${SAZ_MEDIA[i]}" style="width:100%;text-align:center;font-size:11px;padding:3px 2px;border:1px solid var(--g2);border-radius:4px;font-family:'Poppins',sans-serif" oninput="saz2026[${i}]=parseFloat(this.value)||0;updateSaz()"><span style="font-size:10px;color:#F62642;font-weight:500" id="saz-n-${i}">${Math.round(473*SAZ_MEDIA[i]/100)}</span>`;
+      grid.appendChild(wrap);
+    });
+  }
+
+  destroyChart('c-saz');
+  const ctx=document.getElementById('c-saz'); if(!ctx) return;
+
+  const datalabelPlugin={id:'dl',afterDatasetsDraw(chart){
+    const ctx=chart.ctx;
+    chart.data.datasets.forEach((ds,di)=>{
+      const meta=chart.getDatasetMeta(di); if(meta.hidden) return;
+      meta.data.forEach((bar,i)=>{
+        const val=ds.data[i]; if(!val) return;
+        ctx.save();
+        ctx.font=`${di===3?'bold ':''} 9px Poppins,sans-serif`;
+        ctx.fillStyle=di===3?'#F62642':'#888';
+        ctx.textAlign='center';ctx.textBaseline='bottom';
+        ctx.fillText(val+'%',bar.x,bar.y-2);
+        ctx.restore();
+      });
+    });
+  }};
+
+  charts['c-saz']=new Chart(ctx,{type:'bar',plugins:[datalabelPlugin],data:{labels:MESES_LABEL,datasets:[
+    {label:'2023',data:SAZ['2023'],backgroundColor:'#AAB8C2',borderRadius:3,borderSkipped:false},
+    {label:'2024',data:SAZ['2024'],backgroundColor:'#0C7488',borderRadius:3,borderSkipped:false},
+    {label:'2025',data:SAZ['2025'],backgroundColor:'#91DBE4',borderRadius:3,borderSkipped:false},
+    {label:'2026 (meta)',data:[...saz2026],backgroundColor:'#F62642',borderRadius:3,borderSkipped:false},
+  ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw}%`}}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#888',autoSkip:false}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:11},color:'#888',callback:v=>v+'%'}}}}});
+}
+
+function updateSaz(){
+  if(charts['c-saz']){
+    charts['c-saz'].data.datasets[3].data=[...saz2026];
+    charts['c-saz'].update('none');
+  }
+  const total=Math.round(saz2026.reduce((a,b)=>a+b,0)*10)/10;
+  const el=document.getElementById('saz-total'); if(el){el.textContent=total+'%';el.style.color=Math.abs(total-100)<0.5?'#1a7a3a':'#F62642';}
+  saz2026.forEach((p,i)=>{const el=document.getElementById(`saz-n-${i}`);if(el)el.textContent=Math.round(473*p/100);});
+  renderProjecao2026();
+}
+
+function renderProjecao2026(){
+  const metaE=saz2026.map(p=>Math.round(473*p/100));
+  let acum=489;
+  const acumProj=metaE.map((e,i)=>{acum+=e-META_S_MENSAL[i];return acum;});
+
+  destroyChart('c-proj-2026');
+  const ctx=document.getElementById('c-proj-2026'); if(!ctx) return;
+  charts['c-proj-2026']=new Chart(ctx,{type:'bar',data:{labels:MESES_LABEL,datasets:[
+    {type:'line',label:'Acumulado projetado',data:acumProj,borderColor:'#BA7517',backgroundColor:'transparent',borderWidth:2,pointRadius:4,pointBackgroundColor:'#BA7517',tension:0.3,yAxisID:'y'},
+    {type:'line',label:'Meta final (750)',data:Array(12).fill(META.ativos_total),borderColor:'rgba(14,20,40,0.3)',backgroundColor:'transparent',borderWidth:1,borderDash:[4,4],pointRadius:0,yAxisID:'y'},
+    {label:'Entradas previstas',data:metaE,backgroundColor:'#0C7488',borderRadius:3,borderSkipped:false,yAxisID:'y1'},
+    {label:'Saídas previstas',data:META_S_MENSAL.map(v=>-v),backgroundColor:'#F62642',borderRadius:3,borderSkipped:false,yAxisID:'y1'},
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${Math.abs(c.raw)}`}}},scales:{
+    x:{grid:{display:false},ticks:{font:{size:11},color:'#888',autoSkip:false}},
+    y:{position:'left',grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:11},color:'#888'},title:{display:true,text:'Acumulado',font:{size:9},color:'#888'}},
+    y1:{position:'right',grid:{display:false},ticks:{font:{size:11},color:'#888',callback:v=>Math.abs(v)},title:{display:true,text:'Mês',font:{size:9},color:'#888'}}
+  }}});
+}
+
 // CHART HELPERS
-// ═══════════════════════════════════
-function capFirst(s) { if(!s) return s; return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase(); }
-function destroyChart(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
+function capFirst(s){if(!s)return s;return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase();}
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
-function mkLeg(id, labels, colors, values) {
-  const el = document.getElementById(id); if(!el) return;
-  const total = values ? values.reduce((a,b)=>a+b,0) : 0;
-  el.innerHTML = labels.map((l,i)=>
-    `<span><span class="ld" style="background:${colors[i%PAL.length]}"></span>${l}${values?' <strong>'+Math.round(values[i]/total*100)+'%</strong>':''}</span>`
-  ).join('');
+const datalabelPlugin={id:'dl_custom',afterDatasetsDraw(chart){
+  const ctx=chart.ctx;
+  chart.data.datasets.forEach((ds,di)=>{
+    if(ds.type==='line'||ds.type==='scatter') return;
+    const meta=chart.getDatasetMeta(di); if(meta.hidden) return;
+    meta.data.forEach((bar,i)=>{
+      const val=ds.data[i]; if(!val&&val!==0) return;
+      const absVal=Math.abs(val);
+      const total=ds.data.reduce((a,b)=>a+(Math.abs(b)||0),0);
+      const pctVal=total>0?Math.round(absVal/total*100):0;
+      ctx.save();
+      ctx.font='9px Poppins,sans-serif';
+      ctx.fillStyle='#555';
+      ctx.textAlign='center';ctx.textBaseline='bottom';
+      if(chart.config.options.indexAxis==='y'){
+        ctx.textAlign='left';ctx.textBaseline='middle';
+        ctx.fillText(`${absVal} (${pctVal}%)`,bar.x+4,bar.y);
+      } else {
+        ctx.fillText(absVal,bar.x,bar.y-2);
+      }
+      ctx.restore();
+    });
+  });
+}};
+
+function mkLeg(id,labels,colors,values){
+  const el=document.getElementById(id); if(!el) return;
+  const total=values?values.reduce((a,b)=>a+b,0):0;
+  el.innerHTML=labels.map((l,i)=>`<span><span class="ld" style="background:${colors[i%PAL.length]}"></span>${l}${values?' <strong>'+Math.round(values[i]/total*100)+'%</strong>':''}</span>`).join('');
 }
 
-function mkDoughnut(id, countMap, legId, showVal=false) {
+function mkDoughnut(id,countMap,legId,showVal=false){
   destroyChart(id);
-  const entries = Object.entries(countMap).filter(([k])=>k&&k!=='').sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const labels=entries.map(e=>e[0]), data=entries.map(e=>e[1]);
+  const entries=Object.entries(countMap).filter(([k])=>k&&k!=='').sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const labels=entries.map(e=>e[0]),data=entries.map(e=>e[1]);
   const colors=labels.map((_,i)=>PAL[i%PAL.length]);
-  if(legId) mkLeg(legId, labels.map((l,i)=>showVal?`${l} R$${data[i]}k`:l), colors, showVal?null:data);
+  if(legId) mkLeg(legId,labels.map((l,i)=>showVal?`${l} R$${data[i]}k`:l),colors,showVal?null:data);
   const ctx=document.getElementById(id); if(!ctx) return;
   charts[id]=new Chart(ctx,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw}`}}}}});
 }
 
-function mkHBar(id, countMap, color) {
+function mkHBar(id,countMap,color){
   destroyChart(id);
   const entries=Object.entries(countMap).filter(([k])=>k&&k!=='').sort((a,b)=>b[1]-a[1]);
-  const labels=entries.map(e=>e[0]), data=entries.map(e=>e[1]);
+  const labels=entries.map(e=>e[0]),data=entries.map(e=>e[1]);
   const total=data.reduce((a,b)=>a+b,0);
   const ctx=document.getElementById(id); if(!ctx) return;
-  charts[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{data,backgroundColor:color,borderRadius:4,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw} (${Math.round(c.raw/total*100)}%)`}}},
+  charts[id]=new Chart(ctx,{type:'bar',plugins:[datalabelPlugin],data:{labels,datasets:[{data,backgroundColor:color,borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',layout:{padding:{right:80}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw} (${Math.round(c.raw/total*100)}%)`}}},
     scales:{x:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10},color:'#888'}},y:{grid:{display:false},ticks:{font:{size:10},color:'#888'}}}}});
 }
 
-function mkFlowBar(id, labels, entradas, saidas) {
+function mkFlowBar(id,labels,entradas,saidas){
   destroyChart(id);
   const ctx=document.getElementById(id); if(!ctx) return;
-  charts[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[
+  const datalabelTopPlugin={id:'dl_top',afterDatasetsDraw(chart){
+    const ctx=chart.ctx;
+    chart.data.datasets.forEach((ds,di)=>{
+      const meta=chart.getDatasetMeta(di); if(meta.hidden) return;
+      meta.data.forEach((bar,i)=>{
+        const val=Math.abs(ds.data[i]); if(!val) return;
+        ctx.save();ctx.font='9px Poppins,sans-serif';ctx.fillStyle='#555';ctx.textAlign='center';ctx.textBaseline='bottom';
+        ctx.fillText(val,bar.x,bar.y-2);ctx.restore();
+      });
+    });
+  }};
+  charts[id]=new Chart(ctx,{type:'bar',plugins:[datalabelTopPlugin],data:{labels,datasets:[
     {label:'Entradas',data:entradas,backgroundColor:'#0C7488',borderRadius:3,borderSkipped:false},
     {label:'Saídas',data:saidas.map(v=>-v),backgroundColor:'#F62642',borderRadius:3,borderSkipped:false}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${Math.abs(c.raw)}`}}},
+  ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:16}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${Math.abs(c.raw)}`}}},
     scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#888',maxRotation:45,autoSkip:false}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10},color:'#888',callback:v=>Math.abs(v)}}}}});
 }
 
-function mkFlowConsolidado(id, labels, ec, et, sc, st) {
+function mkFlowConsolidado(id,labels,ec,et,sc,st){
   destroyChart(id);
   const ctx=document.getElementById(id); if(!ctx) return;
   charts[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[
@@ -844,34 +910,81 @@ function mkFlowConsolidado(id, labels, ec, et, sc, st) {
     scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:10},color:'#888',maxRotation:45,autoSkip:false}},y:{stacked:true,grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10},color:'#888',callback:v=>Math.abs(v)}}}}});
 }
 
-function mkSaldoBar(id, labels, saldos) {
+function mkSaldoBar(id,labels,saldos){
   destroyChart(id);
   const ctx=document.getElementById(id); if(!ctx) return;
-  charts[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{data:saldos,backgroundColor:saldos.map(v=>v>=0?'#0C7488':'#F62642'),borderRadius:3,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` Saldo: ${c.raw>0?'+':''}${c.raw}`}}},
+  const datalabelTopPlugin={id:'dl_saldo',afterDatasetsDraw(chart){
+    const ctx=chart.ctx;
+    chart.data.datasets[0].data.forEach((val,i)=>{
+      const bar=chart.getDatasetMeta(0).data[i];
+      ctx.save();ctx.font='bold 10px Poppins,sans-serif';
+      ctx.fillStyle=val>=0?'#0C7488':'#F62642';
+      ctx.textAlign='center';ctx.textBaseline=val>=0?'bottom':'top';
+      ctx.fillText((val>=0?'+':'')+val,bar.x,val>=0?bar.y-3:bar.y+3);
+      ctx.restore();
+    });
+  }};
+  charts[id]=new Chart(ctx,{type:'bar',plugins:[datalabelTopPlugin],data:{labels,datasets:[{data:saldos,backgroundColor:saldos.map(v=>v>=0?'#0C7488':'#F62642'),borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` Saldo: ${c.raw>0?'+':''}${c.raw}`}}},
     scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#888',maxRotation:45,autoSkip:false}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10},color:'#888'}}}}});
 }
 
-function mkLineEvolucao(id, labels, series) {
+function mkLineMulti(id,labels,series){
   destroyChart(id);
   const ctx=document.getElementById(id); if(!ctx) return;
-  const datasets = series.map(s => s.bar ? {
-    type:'bar', label:s.label, data:s.data, backgroundColor:s.color+'88', borderRadius:2, yAxisID:'y1'
-  } : {
-    type:'line', label:s.label, data:s.data, borderColor:s.color, backgroundColor:'transparent',
-    borderWidth:s.dash?1.5:2, borderDash:s.dash?[4,3]:[], pointRadius:0, pointHoverRadius:4, tension:0.3, yAxisID:'y'
+  const datasets=series.map(s=>s.bar?{
+    type:'bar',label:s.label,data:s.data,backgroundColor:s.color+'88',borderRadius:2,yAxisID:'y1'
+  }:{
+    type:'line',label:s.label,data:s.data,borderColor:s.color,backgroundColor:'transparent',
+    borderWidth:s.dash?1.5:2,borderDash:s.dash?[4,3]:[],
+    pointRadius:s.dash?0:0,pointHoverRadius:4,tension:0.3,yAxisID:'y',
+    segment:{borderColor:s.dash?s.color:undefined}
   });
-  charts[id]=new Chart(ctx,{data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,
+
+  const linePlugin={id:'line_labels',afterDatasetsDraw(chart){
+    const ctx=chart.ctx;
+    chart.data.datasets.forEach((ds,di)=>{
+      if(ds.type==='bar') return;
+      const meta=chart.getDatasetMeta(di); if(meta.hidden) return;
+      const step=Math.ceil(meta.data.length/20);
+      meta.data.forEach((pt,i)=>{
+        if(i%step!==0&&i!==meta.data.length-1) return;
+        const val=ds.data[i]; if(val===null||val===undefined) return;
+        ctx.save();ctx.font='8px Poppins,sans-serif';
+        ctx.fillStyle=ds.borderColor;
+        ctx.textAlign='center';ctx.textBaseline='bottom';
+        ctx.fillText(val,pt.x,pt.y-4);ctx.restore();
+      });
+    });
+  }};
+
+  charts[id]=new Chart(ctx,{data:{labels,datasets},plugins:[linePlugin],options:{responsive:true,maintainAspectRatio:false,
     interaction:{mode:'index',intersect:false},
     plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${Math.abs(c.raw)}`}}},
     scales:{
-      x:{grid:{display:false},ticks:{font:{size:9},color:'#888',maxTicksLimit:18,maxRotation:45}},
+      x:{grid:{display:false},ticks:{font:{size:9},color:'#888',maxTicksLimit:20,maxRotation:45}},
       y:{position:'left',grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10},color:'#888'},title:{display:true,text:'Acumulado',font:{size:9},color:'#888'}},
       y1:{position:'right',grid:{display:false},ticks:{font:{size:10},color:'#888',callback:v=>Math.abs(v)},title:{display:true,text:'Mês',font:{size:9},color:'#888'}}
     }}});
 }
 
-function setInsight(id, saldos) {
+function mkBarAno(id,labels,data,color,label){
+  destroyChart(id);
+  const ctx=document.getElementById(id); if(!ctx) return;
+  const dlPlugin={id:'dl_ano',afterDatasetsDraw(chart){
+    const ctx=chart.ctx;
+    chart.getDatasetMeta(0).data.forEach((bar,i)=>{
+      const val=chart.data.datasets[0].data[i];
+      ctx.save();ctx.font='10px Poppins,sans-serif';ctx.fillStyle='#555';
+      ctx.textAlign='center';ctx.textBaseline='bottom';
+      ctx.fillText(val,bar.x,bar.y-3);ctx.restore();
+    });
+  }};
+  charts[id]=new Chart(ctx,{type:'bar',plugins:[dlPlugin],data:{labels,datasets:[{label,data,backgroundColor:labels.map((_,i)=>i===labels.length-1?color+'88':color),borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:16}},plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#888'}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:11},color:'#888'}}}}});
+}
+
+function setInsight(id,saldos){
   const el=document.getElementById(id); if(!el) return;
   const ultimo=saldos[saldos.length-1];
   const media=Math.round(saldos.reduce((a,b)=>a+b,0)/saldos.length);
@@ -879,40 +992,34 @@ function setInsight(id, saldos) {
   el.innerHTML=`Último mês: <strong>${ultimo>0?'+':''}${ultimo} clientes</strong>. Média dos últimos 12 meses: <strong>${media>0?'+':''}${media}/mês</strong>. Saldo positivo em <strong>${meses_pos} de 12 meses</strong>.`;
 }
 
-// ═══════════════════════════════════
+function renderKPIs(id,cards){
+  document.getElementById(id).innerHTML=cards.map(c=>`<div class="kpi ${c.acc||''}"><div class="kl">${c.label}</div><div class="kv ${c.vc||''}">${c.value}</div><div class="ks">${c.sub}</div></div>`).join('');
+}
+
 // UI
-// ═══════════════════════════════════
-function setTab(tab, btn) {
+function setTab(tab,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('sec-'+tab).classList.add('on');
   btn.classList.add('active');
+  const fb=document.getElementById('filters-bar');
+  if(fb) fb.style.display=tab==='crescimento'?'none':'flex';
+  if(tab==='crescimento') renderCrescimento();
 }
-function setUserUI(me) {
-  const name=me.displayName||me.mail||'Usuário', parts=name.split(' ');
-  document.getElementById('user-av').textContent=(parts[0][0]+(parts[1]?.[0]||'')).toUpperCase();
-  document.getElementById('user-nm').textContent=parts[0];
-}
-function showLoading(v) { document.getElementById('loading').style.display=v?'flex':'none'; }
-function showErr(msg) { const e=document.getElementById('err-banner'); e.textContent=msg; e.style.display='block'; }
-function hideErr() { document.getElementById('err-banner').style.display='none'; }
-function showApp() { document.getElementById('login-screen').style.display='none'; document.getElementById('app').style.display='block'; }
-function showLoginErr(msg) { const e=document.createElement('div'); e.style.cssText='color:#F62642;font-size:12px;margin-top:10px;text-align:center'; e.textContent=msg; document.querySelector('.login-card').appendChild(e); }
+function setUserUI(me){const name=me.displayName||me.mail||'Usuário',parts=name.split(' ');document.getElementById('user-av').textContent=(parts[0][0]+(parts[1]?.[0]||'')).toUpperCase();document.getElementById('user-nm').textContent=parts[0];}
+function showLoading(v){document.getElementById('loading').style.display=v?'flex':'none';}
+function showErr(msg){const e=document.getElementById('err-banner');e.textContent=msg;e.style.display='block';}
+function hideErr(){document.getElementById('err-banner').style.display='none';}
+function showApp(){document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';}
+function showLoginErr(msg){const e=document.createElement('div');e.style.cssText='color:#F62642;font-size:12px;margin-top:10px;text-align:center';e.textContent=msg;document.querySelector('.login-card').appendChild(e);}
 
-// ═══════════════════════════════════
 // BOOT
-// ═══════════════════════════════════
-async function boot() {
-  const hash=window.location.hash.substring(1), params=new URLSearchParams(hash), code=params.get('code');
-  if(params.get('error')) { showLoginErr('Erro no login: '+params.get('error_description')); return; }
-  if(code) {
-    history.replaceState(null,'',window.location.pathname);
-    try { accessToken=await exchangeCode(code); sessionStorage.setItem('at',accessToken); showApp(); await loadAll(); }
-    catch(e) { showLoginErr('Falha: '+e.message); }
-    return;
-  }
+async function boot(){
+  const hash=window.location.hash.substring(1),params=new URLSearchParams(hash),code=params.get('code');
+  if(params.get('error')){showLoginErr('Erro no login: '+params.get('error_description'));return;}
+  if(code){history.replaceState(null,'',window.location.pathname);try{accessToken=await exchangeCode(code);sessionStorage.setItem('at',accessToken);showApp();await loadAll();}catch(e){showLoginErr('Falha: '+e.message);}return;}
   const stored=sessionStorage.getItem('at');
-  if(stored) { accessToken=stored; showApp(); await loadAll(); }
+  if(stored){accessToken=stored;showApp();await loadAll();}
 }
 boot();
 </script>
