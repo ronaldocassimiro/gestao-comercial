@@ -526,7 +526,10 @@ async function exchangeCode(code){const body=new URLSearchParams({client_id:CONF
 async function graphGet(url){const r=await fetch(`https://graph.microsoft.com/v1.0${url}`,{headers:{Authorization:`Bearer ${accessToken}`}});if(!r.ok)throw new Error(`Graph API error: ${r.status} ${url}`);return r.json();}
 async function getSiteId(siteUrl){return(await graphGet(`/sites/${siteUrl}`)).id;}
 async function getListItems(siteId,listName){let items=[],url=`/sites/${siteId}/lists/${encodeURIComponent(listName)}/items?expand=fields&$top=999`;while(url){const d=await graphGet(url);items=items.concat(d.value||[]);url=d['@odata.nextLink']?d['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0',''):null;}return items.map(i=>i.fields||{});}
-async function loadAll(){showLoading(true);hideErr();try{const me=await graphGet('/me');setUserUI(me);const sIdC=await getSiteId(CONFIG.contabilidade.siteUrl);rawContab=await getListItems(sIdC,CONFIG.contabilidade.listName);const sIdT=await getSiteId(CONFIG.tech.siteUrl);rawTech=await getListItems(sIdT,CONFIG.tech.listName);document.getElementById('last-upd').textContent='Atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});applyFilters();}catch(e){showErr('Erro ao carregar dados: '+e.message);}finally{showLoading(false);}}
+async function loadAll(){showLoading(true);hideErr();try{const me=await graphGet('/me');setUserUI(me);const sIdC=await getSiteId(CONFIG.contabilidade.siteUrl);rawContab=await getListItems(sIdC,CONFIG.contabilidade.listName);
+    // DEBUG: log campo saída do 1º registro com saída preenchida
+    const _dbg=rawContab.find(r=>Object.keys(r).some(k=>k.toLowerCase().includes('sa') && r[k] && String(r[k]).match(/\d{2}\/\d{4}/)));
+    if(_dbg) console.log('[DEBUG contab saída] campos com MM/AAAA:',Object.entries(_dbg).filter(([k,v])=>String(v).match(/\d{2}\/\d{4}/)));const sIdT=await getSiteId(CONFIG.tech.siteUrl);rawTech=await getListItems(sIdT,CONFIG.tech.listName);document.getElementById('last-upd').textContent='Atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});applyFilters();}catch(e){showErr('Erro ao carregar dados: '+e.message);}finally{showLoading(false);}}
 
 // FIELD HELPERS
 function fv(r,...keys){for(const k of keys)if(r[k]!==undefined&&r[k]!==null&&r[k]!=='')return String(r[k]);return'';}
@@ -551,7 +554,7 @@ function getSituacaoSnapshot(r, getS, ate) {
 function getRegime(r){return fv(r,'Regime_x0020_Tribut_x00e1_rio_x0020_Ano_x0020_Atual','RegimeTributarioAnoAtual','RegimeTribut_x00e1_rioAnoAtual');}
 function safeYM(val){if(!val)return null;const s=String(val).trim();if(s.includes('/')){const p=s.split('/');if(p.length===2&&p[1].length===4)return`${p[1]}-${p[0].padStart(2,'0')}`;}if(s.match(/^\d{4}-\d{2}/))return s.substring(0,7);return null;}
 function getEntradaYM_contab(r){const v=fv(r,'DatadoContrato','Data_x0020_do_x0020_Contrato','DataDoContrato');if(!v)return null;try{const d=new Date(v);if(!isNaN(d))return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}catch{}return safeYM(v);}
-function getSaidaYM_contab(r){return safeYM(fv(r,'Compet_x00ea_nciadeSa_x00ed_a','Compet_x00ea_ncia_x0020_de_x0020_Sa_x00ed_da'));}
+function getSaidaYM_contab(r){return safeYM(fv(r,'Compet_x00ea_nciadeSa_x00ed_a','Compet_x00ea_ncia_x0020_de_x0020_Sa_x00ed_da','Compet_x00eancia_x0020_de_x0020_Sa_x00edda','Compet_x00eanciadeSa_x00edda','CompetênciadeSaída','Competência_de_Saída','Compet_x00eancia_de_Sa_x00edda','Competência de Saída','Competencia_de_Saida','CompetenciaDeSaida','Compet_nciadeSa_da'));}
 function getEntradaYM_tech(r){const f=fv(r,'field_11','Compet_x00ea_ncia','Competência');if(f)return safeYM(f);if(r.Created){try{const d=new Date(r.Created);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}catch{}}return null;}
 function getSaidaYM_tech(r){const f=r['field_26'];if(!f)return null;const s=String(f).trim();if(/^\d{2}\/\d{4}$/.test(s))return safeYM(s);return null;}
 function getEstado(r){const raw=fv(r,'Estado','field_7','estado');const map={'PARÁ':'PA','RIO DE JANEIRO':'RJ','NITEROI':'RJ','SÃO PAULO':'SP','MINAS GERAIS':'MG'};const s=raw.trim().toUpperCase();return map[s]||s||'N/D';}
@@ -571,7 +574,7 @@ function buildCumulative(entradas,saidas){let c=0;return entradas.map((e,i)=>{c+
 // ACOMPANHAMENTO MENSAL 2026
 // ═══════════════════════════════════
 const MESES_2026 = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const MESES_REAIS = 5;
+const MESES_REAIS = new Date().getMonth() + 1; // dinâmico: 1=Jan, 2=Fev, ... 12=Dez
 const META_E_TOTAL_M  = [40,30,18,39,24,32,61,50,47,32,35,66];
 const META_E_CONTAB_M = [8,6,3,8,5,6,12,10,9,6,7,13];
 const META_E_TECH_M   = [32,24,14,32,19,26,49,40,38,26,28,53];
@@ -1100,9 +1103,12 @@ function renderTech(ft,de,ate){
   const _recReal=_ativosRealT.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
   const _metaAcumMRRT=MESES_2026.map((_,i)=>Math.round(META.mrr_tech*(i+1)/12));
   const _saidas2026T=ALL_PERIODS.filter(p=>p>='2026-01').reduce((sum,p)=>sum+rawTech.filter(r=>getSaidaYM_tech(r)===p).length,0);
+  const _entradas2026T=ALL_PERIODS.filter(p=>p>='2026-01').reduce((sum,p)=>sum+rawTech.filter(r=>getEntradaYM_tech(r)===p).length,0);
+  let _cumMetaET=0; const _metaAcumET=META_E_TECH_M.map(v=>{_cumMetaET+=v;return _cumMetaET;});
   let _cumMetaST=0; const _metaAcumST=META_S_TECH_M.map(v=>{_cumMetaST+=v;return _cumMetaST;});
   renderMVR('mvr-tech',[
     {title:'Clientes Ativos',real:_ativosRealT.length,meta:META.ativos_tech,realFmt:_ativosRealT.length,metaFmt:META.ativos_tech,metaAcum:META_ACUM_TECH,base:snapshotPorPeriodo(rawTech,getEntradaYM_tech,'2025-12').filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,'2025-12')==='ATIVO').length},
+    {title:'Entradas (acum. 2026)',real:_entradas2026T,meta:META.entradas_tech,realFmt:_entradas2026T+' contratos',metaFmt:META.entradas_tech+' contratos',metaAcum:_metaAcumET},
     {title:'Saídas (acum. 2026)',real:_saidas2026T,meta:META.saidas_tech,realFmt:_saidas2026T+' saídas',metaFmt:META.saidas_tech+' saídas',metaAcum:_metaAcumST,inverso:true},
     {title:'MRR Tech',real:Math.round(_recReal),meta:META.mrr_tech,realFmt:fmtBRL(_recReal),metaFmt:fmtBRL(META.mrr_tech),metaAcum:_metaAcumMRRT},
     {title:'Ticket Médio',real:_ativosRealT.length?Math.round(_recReal/_ativosRealT.length):0,meta:META.ticket_tech,realFmt:'R$ '+(_ativosRealT.length?Math.round(_recReal/_ativosRealT.length):0),metaFmt:'R$ '+META.ticket_tech},
@@ -1172,9 +1178,12 @@ function renderContab(fc,de,ate){
   const _honReal=_ativosRealC.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
   const _metaAcumMRRC=MESES_2026.map((_,i)=>Math.round(META.mrr_contab*(i+1)/12));
   const _saidas2026C=ALL_PERIODS.filter(p=>p>='2026-01').reduce((sum,p)=>sum+rawContab.filter(r=>getSaidaYM_contab(r)===p).length,0);
+  const _entradas2026C=ALL_PERIODS.filter(p=>p>='2026-01').reduce((sum,p)=>sum+rawContab.filter(r=>getEntradaYM_contab(r)===p).length,0);
+  let _cumMetaEC=0; const _metaAcumEC=META_E_CONTAB_M.map(v=>{_cumMetaEC+=v;return _cumMetaEC;});
   let _cumMetaSC=0; const _metaAcumSC=META_S_CONTAB_M.map(v=>{_cumMetaSC+=v;return _cumMetaSC;});
   renderMVR('mvr-cont',[
     {title:'Clientes Ativos',real:_ativosRealC.length,meta:META.ativos_contab,realFmt:_ativosRealC.length,metaFmt:META.ativos_contab,metaAcum:META_ACUM_CONTAB,base:snapshotPorPeriodo(rawContab,getEntradaYM_contab,'2025-12').filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,'2025-12')==='ATIVO').length},
+    {title:'Entradas (acum. 2026)',real:_entradas2026C,meta:META.entradas_contab,realFmt:_entradas2026C+' contratos',metaFmt:META.entradas_contab+' contratos',metaAcum:_metaAcumEC},
     {title:'Saídas (acum. 2026)',real:_saidas2026C,meta:META.saidas_contab,realFmt:_saidas2026C+' saídas',metaFmt:META.saidas_contab+' saídas',metaAcum:_metaAcumSC,inverso:true},
     {title:'MRR Contabilidade',real:Math.round(_honReal),meta:META.mrr_contab,realFmt:fmtBRL(_honReal),metaFmt:fmtBRL(META.mrr_contab),metaAcum:_metaAcumMRRC},
     {title:'Ticket Médio',real:_ativosRealC.length?Math.round(_honReal/_ativosRealC.length):0,meta:META.ticket_contab,realFmt:'R$ '+(_ativosRealC.length?Math.round(_honReal/_ativosRealC.length):0),metaFmt:'R$ '+META.ticket_contab},
