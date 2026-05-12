@@ -526,12 +526,7 @@ async function exchangeCode(code){const body=new URLSearchParams({client_id:CONF
 async function graphGet(url){const r=await fetch(`https://graph.microsoft.com/v1.0${url}`,{headers:{Authorization:`Bearer ${accessToken}`}});if(!r.ok)throw new Error(`Graph API error: ${r.status} ${url}`);return r.json();}
 async function getSiteId(siteUrl){return(await graphGet(`/sites/${siteUrl}`)).id;}
 async function getListItems(siteId,listName){let items=[],url=`/sites/${siteId}/lists/${encodeURIComponent(listName)}/items?expand=fields&$top=999`;while(url){const d=await graphGet(url);items=items.concat(d.value||[]);url=d['@odata.nextLink']?d['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0',''):null;}return items.map(i=>i.fields||{});}
-async function loadAll(){showLoading(true);hideErr();try{const me=await graphGet('/me');setUserUI(me);const sIdC=await getSiteId(CONFIG.contabilidade.siteUrl);rawContab=await getListItems(sIdC,CONFIG.contabilidade.listName);
-    // DEBUG saídas 2026
-    const _dbg2026=rawContab.filter(r=>r['Compet_x00ea_nciadeSa_x00ed_da']||r['Compet_x00ea_nciadeSa_x00ed_a']);
-    console.log('[DEBUG saídas contab] total com campo preenchido:',_dbg2026.length);
-    const _dbgSample=_dbg2026.slice(0,5).map(r=>({saida:r['Compet_x00ea_nciadeSa_x00ed_da']||r['Compet_x00ea_nciadeSa_x00ed_a'],sit:r['Situa_x00e7__x00e3_o']}));
-    console.log('[DEBUG saídas contab] amostra:',_dbgSample);const sIdT=await getSiteId(CONFIG.tech.siteUrl);rawTech=await getListItems(sIdT,CONFIG.tech.listName);document.getElementById('last-upd').textContent='Atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});applyFilters();}catch(e){showErr('Erro ao carregar dados: '+e.message);}finally{showLoading(false);}}
+async function loadAll(){showLoading(true);hideErr();try{const me=await graphGet('/me');setUserUI(me);const sIdC=await getSiteId(CONFIG.contabilidade.siteUrl);rawContab=await getListItems(sIdC,CONFIG.contabilidade.listName);const sIdT=await getSiteId(CONFIG.tech.siteUrl);rawTech=await getListItems(sIdT,CONFIG.tech.listName);document.getElementById('last-upd').textContent='Atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});applyFilters();}catch(e){showErr('Erro ao carregar dados: '+e.message);}finally{showLoading(false);}}
 
 // FIELD HELPERS
 function fv(r,...keys){for(const k of keys)if(r[k]!==undefined&&r[k]!==null&&r[k]!=='')return String(r[k]);return'';}
