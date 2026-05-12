@@ -472,7 +472,8 @@ main{max-width:1400px;margin:0 auto;padding:18px}
       <div class="sec-title" style="margin-bottom:10px">📅 Acompanhamento Mensal 2026 — Meta vs Realizado</div>
       <div id="share-mensal" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px"></div>
       <div class="sec-title" style="margin-bottom:10px">📈 Evolução Semanal — Últimos 3 Meses</div>
-      <div id="share-semanal"></div>
+      <div id="share-semanal" style="margin-bottom:14px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px" id="share-extra-cards"></div>
     </div>
 
   </main>
@@ -1879,6 +1880,109 @@ function renderShare() {
         y:{grid:{color:'rgba(128,128,128,0.08)'}, ticks:{font:{size:10}, color:'#888'}, min:0}
       }
     }});
+  }
+
+  // ─── 3 Cards extras: Saldo do mês, Top motivos, Ritmo necessário ───
+  const extraEl = document.getElementById('share-extra-cards');
+  if(extraEl) {
+    const _mesAtualLabel = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][new Date().getMonth()];
+    const _anoAtual = new Date().getFullYear();
+
+    // Card 1: Saldo líquido do mês anterior
+    const _now2 = new Date();
+    const _prevDate2 = new Date(_now2.getFullYear(), _now2.getMonth()-1, 1);
+    const _prevPeriod = `${_prevDate2.getFullYear()}-${String(_prevDate2.getMonth()+1).padStart(2,'0')}`;
+    const _prevLabel = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][_prevDate2.getMonth()]+'/'+_prevDate2.getFullYear();
+    const _eC = rawContab.filter(r=>getEntradaYM_contab(r)===_prevPeriod).length;
+    const _eT = rawTech.filter(r=>getEntradaYM_tech(r)===_prevPeriod).length;
+    const _sC = rawContab.filter(r=>getSaidaYM_contab(r)===_prevPeriod).length;
+    const _sT = rawTech.filter(r=>getSaidaYM_tech(r)===_prevPeriod).length;
+    const _saldoC = _eC - _sC, _saldoT = _eT - _sT, _saldoTot = _saldoC + _saldoT;
+    const _saldoCor = _saldoTot >= 0 ? '#1a7a3a' : '#F62642';
+    const _saldoSign = v => v >= 0 ? '+'+v : v;
+
+    // Card 2: Top motivos de saída 2026
+    const _motivosC = countBy(rawContab.filter(r=>{const s=getSaidaYM_contab(r);return s&&s>='2026-01';}), r=>fv(r,'Motivo_x0020_da_x0020_Sa_x00ed_da','Motivo da Saída'));
+    const _motivosT = countBy(rawTech.filter(r=>{const s=getSaidaYM_tech(r);return s&&s>='2026-01';}), r=>fv(r,'MotivodaSa_x00ed_da','Motivo da Saída'));
+    const _motivosTot = {};
+    [...Object.entries(_motivosC), ...Object.entries(_motivosT)].forEach(([k,v])=>{if(k&&k!=='N/D')_motivosTot[k]=(_motivosTot[k]||0)+v;});
+    const _top3 = Object.entries(_motivosTot).filter(([k])=>k).sort((a,b)=>b[1]-a[1]).slice(0,4);
+    const _maxMot = _top3[0]?.[1]||1;
+    const _motivosHTML = _top3.map(([k,v])=>`
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
+          <span style="color:var(--g1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">${k}</span>
+          <span style="font-weight:600;color:var(--navy)">${v}</span>
+        </div>
+        <div style="height:5px;background:var(--g3);border-radius:3px"><div style="width:${Math.round(v/_maxMot*100)}%;height:100%;background:#F62642;border-radius:3px"></div></div>
+      </div>`).join('');
+
+    // Card 3: Ritmo necessário
+    const _mesesRestantes = 12 - new Date().getMonth();
+    const _faltamC = META.entradas_contab - _entC;
+    const _faltamT = META.entradas_tech - _entT;
+    const _ritmoC = Math.max(0, Math.ceil(_faltamC / _mesesRestantes));
+    const _ritmoT = Math.max(0, Math.ceil(_faltamT / _mesesRestantes));
+    const _mediaC = Math.round(_entC / new Date().getMonth());
+    const _mediaT = Math.round(_entT / new Date().getMonth());
+    const _corC = _ritmoC <= _mediaC ? '#1a7a3a' : _ritmoC <= _mediaC*1.5 ? '#BA7517' : '#F62642';
+    const _corT = _ritmoT <= _mediaT ? '#1a7a3a' : _ritmoT <= _mediaT*1.5 ? '#BA7517' : '#F62642';
+
+    extraEl.innerHTML = `
+      <div class="card" style="padding:14px">
+        <div class="sec-title" style="font-size:10px;margin-bottom:10px">Saldo Líquido — ${_prevLabel}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="text-align:center;flex:1">
+            <div style="font-size:10px;color:var(--g1);margin-bottom:2px">Entradas</div>
+            <div style="font-size:20px;font-weight:600;color:#0C7488">+${_eC+_eT}</div>
+          </div>
+          <div style="width:1px;height:36px;background:var(--g3)"></div>
+          <div style="text-align:center;flex:1">
+            <div style="font-size:10px;color:var(--g1);margin-bottom:2px">Saídas</div>
+            <div style="font-size:20px;font-weight:600;color:#F62642">-${_sC+_sT}</div>
+          </div>
+          <div style="width:1px;height:36px;background:var(--g3)"></div>
+          <div style="text-align:center;flex:1">
+            <div style="font-size:10px;color:var(--g1);margin-bottom:2px">Saldo</div>
+            <div style="font-size:20px;font-weight:600;color:${_saldoCor}">${_saldoSign(_saldoTot)}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:10px;color:var(--g1)">
+          <div style="background:var(--g3);border-radius:6px;padding:6px;text-align:center">
+            <div>Contab</div><div style="font-weight:600;color:var(--navy)">${_saldoSign(_eC)}/${_saldoSign(-_sC)}</div>
+          </div>
+          <div style="background:var(--g3);border-radius:6px;padding:6px;text-align:center">
+            <div>Tech</div><div style="font-weight:600;color:var(--navy)">${_saldoSign(_eT)}/${_saldoSign(-_sT)}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:14px">
+        <div class="sec-title" style="font-size:10px;margin-bottom:10px">Top Motivos de Saída — 2026</div>
+        <div style="display:flex;flex-direction:column;gap:8px">${_motivosHTML||'<div style="color:var(--g2);font-size:12px">Sem dados</div>'}</div>
+      </div>
+
+      <div class="card" style="padding:14px">
+        <div class="sec-title" style="font-size:10px;margin-bottom:10px">Ritmo Necessário — Meta Dez/2026</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="background:var(--g3);border-radius:8px;padding:10px">
+            <div style="font-size:10px;color:var(--g1);margin-bottom:4px">Contabilidade</div>
+            <div style="display:flex;align-items:baseline;gap:6px">
+              <span style="font-size:22px;font-weight:600;color:${_corC}">~${_ritmoC}</span>
+              <span style="font-size:11px;color:var(--g1)">contratos/mês</span>
+            </div>
+            <div style="font-size:10px;color:var(--g2);margin-top:2px">Faltam ${_faltamC} · média atual ${_mediaC}/mês</div>
+          </div>
+          <div style="background:var(--g3);border-radius:8px;padding:10px">
+            <div style="font-size:10px;color:var(--g1);margin-bottom:4px">Tech</div>
+            <div style="display:flex;align-items:baseline;gap:6px">
+              <span style="font-size:22px;font-weight:600;color:${_corT}">~${_ritmoT}</span>
+              <span style="font-size:11px;color:var(--g1)">contratos/mês</span>
+            </div>
+            <div style="font-size:10px;color:var(--g2);margin-top:2px">Faltam ${_faltamT} · média atual ${_mediaT}/mês</div>
+          </div>
+        </div>
+      </div>`;
   }
 }
 
