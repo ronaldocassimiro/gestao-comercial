@@ -449,18 +449,28 @@ main{max-width:1400px;margin:0 auto;padding:18px}
 
     <div class="section" id="sec-share">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-        <div style="font-family:'Comfortaa',cursive;font-size:18px;color:var(--navy);font-weight:700">📊 Resumo Executivo — Lucralize</div>
+        <div style="font-family:'Comfortaa',cursive;font-size:16px;color:var(--navy);font-weight:700">📊 Resumo Executivo — Lucralize</div>
         <div style="display:flex;gap:10px;align-items:center">
           <span id="share-upd" style="font-size:11px;color:var(--g1)"></span>
           <button onclick="window.print()" style="background:var(--teal);color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-family:Poppins,sans-serif;cursor:pointer;font-weight:500">🖨️ Imprimir / Salvar PDF</button>
         </div>
       </div>
-      <div style="margin-bottom:6px;font-size:11px;font-weight:700;color:var(--g1);text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid var(--g3);padding-bottom:6px">📋 Contabilidade</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px" id="share-cards-cont"></div>
-      <div style="margin-bottom:6px;font-size:11px;font-weight:700;color:var(--g1);text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid var(--g3);padding-bottom:6px">💻 Lucralize Tech</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px" id="share-cards-tech"></div>
-      <div style="margin-bottom:6px;font-size:11px;font-weight:700;color:var(--g1);text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid var(--g3);padding-bottom:6px">📅 Acompanhamento Mensal 2026 — Consolidado</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="share-mensal"></div>
+
+      <!-- Contab + Tech lado a lado -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+        <div class="card" style="padding:14px">
+          <div class="sec-title" style="margin-bottom:10px;font-size:11px">🎯 Meta vs Realizado 2026 — Contabilidade</div>
+          <div id="share-mvr-cont"></div>
+        </div>
+        <div class="card" style="padding:14px">
+          <div class="sec-title" style="margin-bottom:10px;font-size:11px">🎯 Meta vs Realizado 2026 — Tech</div>
+          <div id="share-mvr-tech"></div>
+        </div>
+      </div>
+
+      <!-- Acompanhamento mensal consolidado -->
+      <div class="sec-title" style="margin-bottom:10px">📅 Acompanhamento Mensal 2026 — Meta vs Realizado</div>
+      <div id="share-mensal" style="display:grid;grid-template-columns:1fr 1fr;gap:14px"></div>
     </div>
 
   </main>
@@ -1719,110 +1729,69 @@ function renderShare() {
   const upd = document.getElementById('share-upd');
   if (upd) upd.textContent = 'Dados de ' + new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 
-  const now = new Date();
-  const mesAtual = now.getMonth(); // 0=Jan
-  const mesLabel = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][mesAtual];
+  // Reutiliza renderMVR para Contab e Tech
+  const _ativosRealC = rawContab.filter(r=>getSituacao(r)==='ATIVO');
+  const _honReal = _ativosRealC.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
+  const _ativosRealT = rawTech.filter(r=>getSituacao(r)==='ATIVO');
+  const _recReal = _ativosRealT.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
+  const _entC = ALL_PERIODS.filter(p=>p>='2026-01').reduce((s,p)=>s+rawContab.filter(r=>getEntradaYM_contab(r)===p).length,0);
+  const _entT = ALL_PERIODS.filter(p=>p>='2026-01').reduce((s,p)=>s+rawTech.filter(r=>getEntradaYM_tech(r)===p).length,0);
+  const _saiC = ALL_PERIODS.filter(p=>p>='2026-01').reduce((s,p)=>s+rawContab.filter(r=>getSaidaYM_contab(r)===p).length,0);
+  const _saiT = ALL_PERIODS.filter(p=>p>='2026-01').reduce((s,p)=>s+rawTech.filter(r=>getSaidaYM_tech(r)===p).length,0);
+  let _ceC=0,_ceT=0,_csC=0,_csT=0,_mC=0,_mT=0;
+  const _metaEC=META_E_CONTAB_M.map(v=>{_ceC+=v;return _ceC;});
+  const _metaET=META_E_TECH_M.map(v=>{_ceT+=v;return _ceT;});
+  const _metaSC=META_S_CONTAB_M.map(v=>{_csC+=v;return _csC;});
+  const _metaST=META_S_TECH_M.map(v=>{_csT+=v;return _csT;});
+  const _metaMRC=MESES_2026.map((_,i)=>Math.round(META.mrr_contab*(i+1)/12));
+  const _metaMRT=MESES_2026.map((_,i)=>Math.round(META.mrr_tech*(i+1)/12));
 
-  function shareCard(title, real, meta, metaAcum, base, inverso) {
-    const crescPlan = base !== undefined ? meta - base : meta;
-    const crescReal = base !== undefined ? real - base : real;
-    const p = crescPlan > 0 ? Math.min(100, Math.round(Math.max(0, crescReal) / crescPlan * 100)) : pct(real, meta);
-    const ideal = metaAcum ? (base !== undefined
-      ? Math.round(Math.max(0, metaAcum[mesAtual] - base) / crescPlan * 100)
-      : Math.round(metaAcum[mesAtual] / meta * 100))
-      : Math.round((mesAtual+1)/12*100);
-    const cor = inverso ? (p <= ideal ? '#1a7a3a' : '#F62642') : pctColor(p);
-    const label = inverso ? (p <= ideal ? '✓ Dentro do limite' : '⚠ Acima do limite') : '● Realizado';
-    return `<div style="background:#fff;border-radius:10px;padding:14px 16px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 1px 3px rgba(0,0,0,0.04)">
-      <div style="font-size:10px;font-weight:600;color:#657786;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">${title}</div>
-      <div style="font-size:22px;font-weight:700;color:${cor};margin-bottom:2px">${typeof real==='number'&&real>1000?fmtBRL(real):real}</div>
-      <div style="font-size:11px;color:#AAB8C2;margin-bottom:8px">Meta: ${typeof meta==='number'&&meta>1000?fmtBRL(meta):meta}</div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-        <div style="flex:1;height:6px;background:#EBF0F3;border-radius:3px"><div style="width:${p}%;height:100%;background:${cor};border-radius:3px"></div></div>
-        <span style="font-size:10px;color:${cor};min-width:28px;text-align:right">${p}%</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-        <div style="flex:1;height:6px;background:#EBF0F3;border-radius:3px"><div style="width:${ideal}%;height:100%;background:#AAB8C2;border-radius:3px"></div></div>
-        <span style="font-size:10px;color:#AAB8C2;min-width:28px;text-align:right">${ideal}%</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:10px">
-        <span style="color:${cor}">${label}</span>
-        <span style="color:#AAB8C2">${inverso?'● Limite':'● Ideal'} até ${mesLabel}</span>
-      </div>
-    </div>`;
-  }
+  renderMVR('share-mvr-cont',[
+    {title:'Clientes Ativos',real:_ativosRealC.length,meta:META.ativos_contab,realFmt:_ativosRealC.length,metaFmt:META.ativos_contab,metaAcum:META_ACUM_CONTAB,base:snapshotPorPeriodo(rawContab,getEntradaYM_contab,'2025-12').filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,'2025-12')==='ATIVO').length},
+    {title:'Entradas (acum. 2026)',real:_entC,meta:META.entradas_contab,realFmt:_entC+' contratos',metaFmt:META.entradas_contab+' contratos',metaAcum:_metaEC},
+    {title:'Saídas (acum. 2026)',real:_saiC,meta:META.saidas_contab,realFmt:_saiC+' saídas',metaFmt:META.saidas_contab+' saídas',metaAcum:_metaSC,inverso:true},
+  ]);
 
-  // Base 2025
-  const base2025C = snapshotPorPeriodo(rawContab, getEntradaYM_contab, '2025-12').filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,'2025-12')==='ATIVO').length;
-  const base2025T = snapshotPorPeriodo(rawTech, getEntradaYM_tech, '2025-12').filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,'2025-12')==='ATIVO').length;
+  renderMVR('share-mvr-tech',[
+    {title:'Clientes Ativos',real:_ativosRealT.length,meta:META.ativos_tech,realFmt:_ativosRealT.length,metaFmt:META.ativos_tech,metaAcum:META_ACUM_TECH,base:snapshotPorPeriodo(rawTech,getEntradaYM_tech,'2025-12').filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,'2025-12')==='ATIVO').length},
+    {title:'Entradas (acum. 2026)',real:_entT,meta:META.entradas_tech,realFmt:_entT+' contratos',metaFmt:META.entradas_tech+' contratos',metaAcum:_metaET},
+    {title:'Saídas (acum. 2026)',real:_saiT,meta:META.saidas_tech,realFmt:_saiT+' saídas',metaFmt:META.saidas_tech+' saídas',metaAcum:_metaST,inverso:true},
+  ]);
 
-  // Ativos reais
-  const ativosC = rawContab.filter(r=>getSituacao(r)==='ATIVO').length;
-  const ativosT = rawTech.filter(r=>getSituacao(r)==='ATIVO').length;
-
-  // Entradas 2026
-  const entC = ALL_PERIODS.filter(p=>p>='2026-01').reduce((s,p)=>s+rawContab.filter(r=>getEntradaYM_contab(r)===p).length,0);
-  const entT = ALL_PERIODS.filter(p=>p>='2026-01').reduce((s,p)=>s+rawTech.filter(r=>getEntradaYM_tech(r)===p).length,0);
-
-  // Saídas 2026
-  const saiC = ALL_PERIODS.filter(p=>p>='2026-01').reduce((s,p)=>s+rawContab.filter(r=>getSaidaYM_contab(r)===p).length,0);
-  const saiT = ALL_PERIODS.filter(p=>p>='2026-01').reduce((s,p)=>s+rawTech.filter(r=>getSaidaYM_tech(r)===p).length,0);
-
-  // Meta acum entradas
-  let _ceC=0,_ceT=0,_csC=0,_csT=0;
-  const metaEntC = META_E_CONTAB_M.map(v=>{_ceC+=v;return _ceC;});
-  const metaEntT = META_E_TECH_M.map(v=>{_ceT+=v;return _ceT;});
-  const metaSaiC = META_S_CONTAB_M.map(v=>{_csC+=v;return _csC;});
-  const metaSaiT = META_S_TECH_M.map(v=>{_csT+=v;return _csT;});
-
-  // Render cards
-  const contEl = document.getElementById('share-cards-cont');
-  if (contEl) contEl.innerHTML =
-    shareCard('Clientes Ativos', ativosC, META.ativos_contab, META_ACUM_CONTAB, base2025C, false) +
-    shareCard('Entradas (acum. 2026)', entC+' contratos', META.entradas_contab+' contratos', metaEntC, undefined, false) +
-    shareCard('Saídas (acum. 2026)', saiC+' saídas', META.saidas_contab+' saídas', metaSaiC, undefined, true);
-
-  const techEl = document.getElementById('share-cards-tech');
-  if (techEl) techEl.innerHTML =
-    shareCard('Clientes Ativos', ativosT, META.ativos_tech, META_ACUM_TECH, base2025T, false) +
-    shareCard('Entradas (acum. 2026)', entT+' contratos', META.entradas_tech+' contratos', metaEntT, undefined, false) +
-    shareCard('Saídas (acum. 2026)', saiT+' saídas', META.saidas_tech+' saídas', metaSaiT, undefined, true);
-
-  // Gráficos acompanhamento mensal
+  // Gráficos acompanhamento mensal consolidado
   const mensalEl = document.getElementById('share-mensal');
   if (mensalEl) mensalEl.innerHTML = `
-    <div class="card"><div class="ct" style="margin-bottom:8px">Entradas — Meta vs Realizado <span class="ct-badge badge-teal">Mês a Mês</span></div>
+    <div class="card">
+      <div class="ct" style="margin-bottom:8px">Entradas — Meta vs Realizado <span class="ct-badge badge-teal">Mês a Mês</span></div>
       <div class="cw" style="height:220px"><canvas id="c-share-ent"></canvas></div>
       <div class="leg"><span><span class="ld" style="background:rgba(14,20,40,0.15)"></span>Meta</span><span><span class="ld" style="background:#0C7488"></span>Realizado</span></div>
     </div>
-    <div class="card"><div class="ct" style="margin-bottom:8px">Saídas — Meta vs Realizado <span class="ct-badge badge-red">Mês a Mês</span></div>
+    <div class="card">
+      <div class="ct" style="margin-bottom:8px">Saídas — Meta vs Realizado <span class="ct-badge badge-red">Mês a Mês · Meta = Controle de Churn</span></div>
       <div class="cw" style="height:220px"><canvas id="c-share-sai"></canvas></div>
-      <div class="leg"><span><span class="ld" style="background:rgba(246,38,66,0.15)"></span>Meta máxima</span><span><span class="ld" style="background:#F62642"></span>Realizado</span></div>
+      <div class="leg"><span><span class="ld" style="background:rgba(246,38,66,0.15)"></span>Meta máxima</span><span><span class="ld" style="background:#F62642"></span>Realizado</span><span style="font-size:10px;color:#657786">(abaixo da meta = bom ✓)</span></div>
     </div>`;
 
-  // Calcula dados consolidados para os gráficos
   const realMC = buildRealMensal2026(rawContab, getEntradaYM_contab, getSaidaYM_contab);
   const realMT = buildRealMensal2026(rawTech, getEntradaYM_tech, getSaidaYM_tech);
   const realEtot = realMC.entradas.map((v,i)=>v+realMT.entradas[i]);
   const realStot = realMC.saidas.map((v,i)=>v+realMT.saidas[i]);
   const nR = new Date().getMonth()+1;
 
-  // Gráfico entradas
   destroyChart('c-share-ent');
   const ctxE = document.getElementById('c-share-ent');
-  if (ctxE) {
-    const dlE={id:'dlse',afterDatasetsDraw(chart){const ctx=chart.ctx;chart.data.datasets.forEach((ds,di)=>{const color=di===0?'#888':'#0C7488';const meta=chart.getDatasetMeta(di);meta.data.forEach((bar,i)=>{const val=ds.data[i];if(!val&&val!==0)return;ctx.save();ctx.font='9px Poppins,sans-serif';ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(val,bar.x,bar.y-2);ctx.restore();});});}}; 
+  if(ctxE){
+    const dlE={id:'dlse',afterDatasetsDraw(chart){const ctx=chart.ctx;chart.data.datasets.forEach((ds,di)=>{const color=di===0?'#888':'#0C7488';const meta=chart.getDatasetMeta(di);meta.data.forEach((bar,i)=>{const val=ds.data[i];if(!val&&val!==0)return;ctx.save();ctx.font='9px Poppins,sans-serif';ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(val,bar.x,bar.y-2);ctx.restore();});});}};
     charts['c-share-ent']=new Chart(ctxE,{type:'bar',plugins:[dlE],data:{labels:MESES_2026,datasets:[
       {label:'Meta',data:META_E_TOTAL_M,backgroundColor:'rgba(14,20,40,0.12)',borderRadius:3,borderSkipped:false},
       {label:'Realizado',data:[...realEtot.slice(0,nR),...Array(12-nR).fill(null)],backgroundColor:'#0C7488',borderRadius:3,borderSkipped:false},
     ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:16}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw??'—'}`}}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#888',autoSkip:false}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10},color:'#888'}}}}});
   }
 
-  // Gráfico saídas
   destroyChart('c-share-sai');
   const ctxS = document.getElementById('c-share-sai');
-  if (ctxS) {
-    const dlS={id:'dlss',afterDatasetsDraw(chart){const ctx=chart.ctx;chart.data.datasets.forEach((ds,di)=>{const color=di===0?'#888':'#F62642';const meta=chart.getDatasetMeta(di);meta.data.forEach((bar,i)=>{const val=ds.data[i];if(!val&&val!==0)return;ctx.save();ctx.font='9px Poppins,sans-serif';ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(val,bar.x,bar.y-2);ctx.restore();});});}}; 
+  if(ctxS){
+    const dlS={id:'dlss',afterDatasetsDraw(chart){const ctx=chart.ctx;chart.data.datasets.forEach((ds,di)=>{const color=di===0?'#888':'#F62642';const meta=chart.getDatasetMeta(di);meta.data.forEach((bar,i)=>{const val=ds.data[i];if(!val&&val!==0)return;ctx.save();ctx.font='9px Poppins,sans-serif';ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(val,bar.x,bar.y-2);ctx.restore();});});}};
     charts['c-share-sai']=new Chart(ctxS,{type:'bar',plugins:[dlS],data:{labels:MESES_2026,datasets:[
       {label:'Meta máxima',data:META_S_MENSAL,backgroundColor:'rgba(246,38,66,0.15)',borderRadius:3,borderSkipped:false},
       {label:'Realizado',data:[...realStot.slice(0,nR),...Array(12-nR).fill(null)],backgroundColor:'#F62642',borderRadius:3,borderSkipped:false},
