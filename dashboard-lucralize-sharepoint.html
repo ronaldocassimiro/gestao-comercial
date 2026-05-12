@@ -483,7 +483,7 @@ const LAST12=ALL_PERIODS.length-12;
 const META={
   ativos_total:750, ativos_contab:263, ativos_tech:487,
   entradas_total:473, entradas_contab:93, entradas_tech:380,
-  saidas_total:165, saidas_contab:55, saidas_tech:110,
+  saidas_total:212, saidas_contab:55, saidas_tech:110,
   mrr_contab:205000, mrr_tech:114000,
   fat_contab:2460000, fat_tech:1370000, fat_total:3830000,
   ticket_contab:780, ticket_tech:234
@@ -946,9 +946,15 @@ function renderGeral(fc,ft,de,ate){
   const _base2025C = _snap2025C.filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,'2025-12')==='ATIVO').length;
   const _base2025T = _snap2025T.filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,'2025-12')==='ATIVO').length;
   const _base2025G = _base2025C + _base2025T;
+  // Saídas acumuladas 2026
+  const _saidas2026Real=ALL_PERIODS.filter(p=>p>='2026-01').reduce((sum,p)=>
+    sum+rawContab.filter(r=>getSaidaYM_contab(r)===p).length+rawTech.filter(r=>getSaidaYM_tech(r)===p).length,0);
+  let _cumMetaSG=0; const _metaAcumSG=META_S_MENSAL.map(v=>{_cumMetaSG+=v;return _cumMetaSG;});
+
   renderMVR('mvr-geral',[
     {title:'Clientes Ativos',real:_ativosRealG,meta:META.ativos_total,realFmt:_ativosRealG,metaFmt:META.ativos_total,metaAcum:META_ACUM_TOTAL,base:_base2025G},
     {title:'Entradas (acum. 2026)',real:_entradas2026Real,meta:META.entradas_total,realFmt:_entradas2026Real+' contratos',metaFmt:META.entradas_total+' contratos',metaAcum:_metaAcumEG},
+    {title:'Saídas (acum. 2026)',real:_saidas2026Real,meta:META.saidas_total,realFmt:_saidas2026Real+' saídas',metaFmt:META.saidas_total+' saídas',metaAcum:_metaAcumSG},
     {title:'MRR Consolidado',real:Math.round(_mrrReal),meta:_mrrMetaTotal,realFmt:fmtBRL(_mrrReal),metaFmt:fmtBRL(_mrrMetaTotal),metaAcum:_metaAcumMRR},
     {title:'Faturamento Anual (proj.)',real:Math.round(fatAnualProj),meta:META.fat_total,realFmt:fmtM(fatAnualProj),metaFmt:fmtM(META.fat_total)},
   ]);
