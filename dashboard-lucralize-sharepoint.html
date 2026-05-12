@@ -682,7 +682,7 @@ function renderMVRMensal(prefix, metaE, realE, metaAcum, ativosInicio, saidasRea
   destroyChart(`c-mvr-e-${prefix}`);
   const ctx1 = document.getElementById(`c-mvr-e-${prefix}`);
   if(ctx1) {
-    const dlTop={id:'dl',afterDatasetsDraw(chart){const ctx=chart.ctx;chart.data.datasets.forEach((ds,di)=>{if(di===0)return;const meta=chart.getDatasetMeta(di);meta.data.forEach((bar,i)=>{const val=ds.data[i];if(!val&&val!==0)return;ctx.save();ctx.font='9px Poppins,sans-serif';ctx.fillStyle='#0C7488';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(val,bar.x,bar.y-2);ctx.restore();});});}} ;
+    const dlTop={id:'dl',afterDatasetsDraw(chart){const ctx=chart.ctx;chart.data.datasets.forEach((ds,di)=>{const color=di===0?'#888':'#0C7488';const meta=chart.getDatasetMeta(di);meta.data.forEach((bar,i)=>{const val=ds.data[i];if(!val&&val!==0)return;ctx.save();ctx.font='9px Poppins,sans-serif';ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(val,bar.x,bar.y-2);ctx.restore();});});}} ;
     charts[`c-mvr-e-${prefix}`] = new Chart(ctx1, {type:'bar',plugins:[dlTop],
       data:{labels:MESES_2026,datasets:[
         {label:'Meta',data:metaE,backgroundColor:'rgba(14,20,40,0.12)',borderRadius:3,borderSkipped:false},
@@ -696,7 +696,7 @@ function renderMVRMensal(prefix, metaE, realE, metaAcum, ativosInicio, saidasRea
   destroyChart(`c-mvr-s-${prefix}`);
   const ctxS = document.getElementById(`c-mvr-s-${prefix}`);
   if(ctxS) {
-    const dlS={id:'dls',afterDatasetsDraw(chart){const ctx=chart.ctx;chart.data.datasets.forEach((ds,di)=>{if(di===0)return;const meta=chart.getDatasetMeta(di);meta.data.forEach((bar,i)=>{const val=ds.data[i];if(!val&&val!==0)return;ctx.save();ctx.font='9px Poppins,sans-serif';ctx.fillStyle='#F62642';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(val,bar.x,bar.y-2);ctx.restore();});});}};
+    const dlS={id:'dls',afterDatasetsDraw(chart){const ctx=chart.ctx;chart.data.datasets.forEach((ds,di)=>{const color=di===0?'#888':'#F62642';const meta=chart.getDatasetMeta(di);meta.data.forEach((bar,i)=>{const val=ds.data[i];if(!val&&val!==0)return;ctx.save();ctx.font='9px Poppins,sans-serif';ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(val,bar.x,bar.y-2);ctx.restore();});});}};
     charts[`c-mvr-s-${prefix}`] = new Chart(ctxS, {type:'bar',plugins:[dlS],
       data:{labels:MESES_2026,datasets:[
         {label:'Meta máxima',data:saidasMeta,backgroundColor:'rgba(246,38,66,0.15)',borderRadius:3,borderSkipped:false},
@@ -845,7 +845,6 @@ function renderMVR(containerId, items) {
     const crescPlaneado = item.base !== undefined ? item.meta - item.base : item.meta;
     const crescReal     = item.base !== undefined ? item.real - item.base : item.real;
     const p = crescPlaneado > 0 ? Math.min(100, Math.round(Math.max(0,crescReal) / crescPlaneado * 100)) : pct(item.real, item.meta);
-    const cor = pctColor(p);
 
     // % ideal: crescimento acumulado até mês atual / crescimento planejado total
     let metaIdeal;
@@ -857,7 +856,11 @@ function renderMVR(containerId, items) {
     } else {
       metaIdeal = Math.round((_mesAtual+1)/12*100);
     }
+
+    // Para métricas inversas (saídas), cor verde quando abaixo do limite, vermelho quando acima
+    const cor = item.inverso ? (p <= metaIdeal ? '#2ecc71' : '#F62642') : pctColor(p);
     const corIdeal='#AAB8C2';
+    const labelReal = item.inverso ? (p <= metaIdeal ? '✓ Dentro do limite' : '⚠ Acima do limite') : null;
 
     return`<div class="mvr-card">
       <div class="mvr-title">${item.title}</div>
@@ -879,8 +882,8 @@ function renderMVR(containerId, items) {
           <span style="font-size:10px;color:${corIdeal};min-width:32px;text-align:right">${metaIdeal}%</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:10px">
-          <span style="color:${cor}">● Realizado</span>
-          <span style="color:${corIdeal}">● Ideal até ${_mesLabel}</span>
+          <span style="color:${cor}">${labelReal||'● Realizado'}</span>
+          <span style="color:${corIdeal}">● Limite até ${_mesLabel}</span>
         </div>
       </div>
     </div>`;
@@ -954,7 +957,7 @@ function renderGeral(fc,ft,de,ate){
   renderMVR('mvr-geral',[
     {title:'Clientes Ativos',real:_ativosRealG,meta:META.ativos_total,realFmt:_ativosRealG,metaFmt:META.ativos_total,metaAcum:META_ACUM_TOTAL,base:_base2025G},
     {title:'Entradas (acum. 2026)',real:_entradas2026Real,meta:META.entradas_total,realFmt:_entradas2026Real+' contratos',metaFmt:META.entradas_total+' contratos',metaAcum:_metaAcumEG},
-    {title:'Saídas (acum. 2026)',real:_saidas2026Real,meta:META.saidas_total,realFmt:_saidas2026Real+' saídas',metaFmt:META.saidas_total+' saídas',metaAcum:_metaAcumSG},
+    {title:'Saídas (acum. 2026)',real:_saidas2026Real,meta:META.saidas_total,realFmt:_saidas2026Real+' saídas',metaFmt:META.saidas_total+' saídas',metaAcum:_metaAcumSG,inverso:true},
     {title:'MRR Consolidado',real:Math.round(_mrrReal),meta:_mrrMetaTotal,realFmt:fmtBRL(_mrrReal),metaFmt:fmtBRL(_mrrMetaTotal),metaAcum:_metaAcumMRR},
     {title:'Faturamento Anual (proj.)',real:Math.round(fatAnualProj),meta:META.fat_total,realFmt:fmtM(fatAnualProj),metaFmt:fmtM(META.fat_total)},
   ]);
@@ -1096,8 +1099,11 @@ function renderTech(ft,de,ate){
   const _ativosRealT=rawTech.filter(r=>getSituacao(r)==='ATIVO');
   const _recReal=_ativosRealT.reduce((s,r)=>s+(parseFloat(fv(r,'Valor'))||0),0);
   const _metaAcumMRRT=MESES_2026.map((_,i)=>Math.round(META.mrr_tech*(i+1)/12));
+  const _saidas2026T=ALL_PERIODS.filter(p=>p>='2026-01').reduce((sum,p)=>sum+rawTech.filter(r=>getSaidaYM_tech(r)===p).length,0);
+  let _cumMetaST=0; const _metaAcumST=META_S_TECH_M.map(v=>{_cumMetaST+=v;return _cumMetaST;});
   renderMVR('mvr-tech',[
     {title:'Clientes Ativos',real:_ativosRealT.length,meta:META.ativos_tech,realFmt:_ativosRealT.length,metaFmt:META.ativos_tech,metaAcum:META_ACUM_TECH,base:snapshotPorPeriodo(rawTech,getEntradaYM_tech,'2025-12').filter(r=>getSituacaoSnapshot(r,getSaidaYM_tech,'2025-12')==='ATIVO').length},
+    {title:'Saídas (acum. 2026)',real:_saidas2026T,meta:META.saidas_tech,realFmt:_saidas2026T+' saídas',metaFmt:META.saidas_tech+' saídas',metaAcum:_metaAcumST,inverso:true},
     {title:'MRR Tech',real:Math.round(_recReal),meta:META.mrr_tech,realFmt:fmtBRL(_recReal),metaFmt:fmtBRL(META.mrr_tech),metaAcum:_metaAcumMRRT},
     {title:'Ticket Médio',real:_ativosRealT.length?Math.round(_recReal/_ativosRealT.length):0,meta:META.ticket_tech,realFmt:'R$ '+(_ativosRealT.length?Math.round(_recReal/_ativosRealT.length):0),metaFmt:'R$ '+META.ticket_tech},
     {title:'Faturamento Anual (proj.)',real:Math.round(_recReal*12),meta:META.fat_tech,realFmt:fmtM(_recReal*12),metaFmt:fmtM(META.fat_tech)},
@@ -1165,8 +1171,11 @@ function renderContab(fc,de,ate){
   const _ativosRealC=rawContab.filter(r=>getSituacao(r)==='ATIVO');
   const _honReal=_ativosRealC.reduce((s,r)=>s+(parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0),0);
   const _metaAcumMRRC=MESES_2026.map((_,i)=>Math.round(META.mrr_contab*(i+1)/12));
+  const _saidas2026C=ALL_PERIODS.filter(p=>p>='2026-01').reduce((sum,p)=>sum+rawContab.filter(r=>getSaidaYM_contab(r)===p).length,0);
+  let _cumMetaSC=0; const _metaAcumSC=META_S_CONTAB_M.map(v=>{_cumMetaSC+=v;return _cumMetaSC;});
   renderMVR('mvr-cont',[
     {title:'Clientes Ativos',real:_ativosRealC.length,meta:META.ativos_contab,realFmt:_ativosRealC.length,metaFmt:META.ativos_contab,metaAcum:META_ACUM_CONTAB,base:snapshotPorPeriodo(rawContab,getEntradaYM_contab,'2025-12').filter(r=>getSituacaoSnapshot(r,getSaidaYM_contab,'2025-12')==='ATIVO').length},
+    {title:'Saídas (acum. 2026)',real:_saidas2026C,meta:META.saidas_contab,realFmt:_saidas2026C+' saídas',metaFmt:META.saidas_contab+' saídas',metaAcum:_metaAcumSC,inverso:true},
     {title:'MRR Contabilidade',real:Math.round(_honReal),meta:META.mrr_contab,realFmt:fmtBRL(_honReal),metaFmt:fmtBRL(META.mrr_contab),metaAcum:_metaAcumMRRC},
     {title:'Ticket Médio',real:_ativosRealC.length?Math.round(_honReal/_ativosRealC.length):0,meta:META.ticket_contab,realFmt:'R$ '+(_ativosRealC.length?Math.round(_honReal/_ativosRealC.length):0),metaFmt:'R$ '+META.ticket_contab},
     {title:'Faturamento Anual (proj.)',real:Math.round(_honReal*12),meta:META.fat_contab,realFmt:fmtM(_honReal*12),metaFmt:fmtM(META.fat_contab)},
