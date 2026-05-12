@@ -471,9 +471,9 @@ main{max-width:1400px;margin:0 auto;padding:18px}
       <!-- Acompanhamento mensal consolidado -->
       <div class="sec-title" style="margin-bottom:10px">📅 Acompanhamento Mensal 2026 — Meta vs Realizado</div>
       <div id="share-mensal" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px"></div>
-      <div class="sec-title" style="margin-bottom:10px">📈 Evolução Semanal — Últimos 3 Meses</div>
-      <div id="share-semanal" style="margin-bottom:14px"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px" id="share-extra-cards"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px" id="share-extra-cards"></div>
+      <div class="sec-title" style="margin-bottom:10px">📈 Evolução Semanal — Últimos 6 Meses</div>
+      <div id="share-semanal"></div>
     </div>
 
   </main>
@@ -1816,7 +1816,7 @@ function renderShare() {
 
   // Calcula semanas dos últimos 3 meses a partir das datas reais
   const _now3 = new Date();
-  const _3mAgo = new Date(_now3.getFullYear(), _now3.getMonth()-2, 1);
+  const _3mAgo = new Date(_now3.getFullYear(), _now3.getMonth()-5, 1);
 
   function getWeekLabel(date) {
     const d = new Date(date.getFullYear(), date.getMonth(), 1);
@@ -1964,22 +1964,22 @@ function renderShare() {
 
       <div class="card" style="padding:14px">
         <div class="sec-title" style="font-size:10px;margin-bottom:10px">Ritmo Necessário — Meta Dez/2026</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <div style="background:var(--g3);border-radius:8px;padding:10px">
             <div style="font-size:10px;color:var(--g1);margin-bottom:4px">Contabilidade</div>
-            <div style="display:flex;align-items:baseline;gap:6px">
-              <span style="font-size:22px;font-weight:600;color:${_corC}">~${_ritmoC}</span>
-              <span style="font-size:11px;color:var(--g1)">contratos/mês</span>
+            <div style="display:flex;align-items:baseline;gap:4px">
+              <span style="font-size:20px;font-weight:600;color:${_corC}">~${_ritmoC}</span>
+              <span style="font-size:10px;color:var(--g1)">contratos/mês</span>
             </div>
-            <div style="font-size:10px;color:var(--g2);margin-top:2px">Faltam ${_faltamC} · média atual ${_mediaC}/mês</div>
+            <div style="font-size:10px;color:var(--g2);margin-top:2px">Faltam ${_faltamC} · média ${_mediaC}/mês</div>
           </div>
           <div style="background:var(--g3);border-radius:8px;padding:10px">
             <div style="font-size:10px;color:var(--g1);margin-bottom:4px">Tech</div>
-            <div style="display:flex;align-items:baseline;gap:6px">
-              <span style="font-size:22px;font-weight:600;color:${_corT}">~${_ritmoT}</span>
-              <span style="font-size:11px;color:var(--g1)">contratos/mês</span>
+            <div style="display:flex;align-items:baseline;gap:4px">
+              <span style="font-size:20px;font-weight:600;color:${_corT}">~${_ritmoT}</span>
+              <span style="font-size:10px;color:var(--g1)">contratos/mês</span>
             </div>
-            <div style="font-size:10px;color:var(--g2);margin-top:2px">Faltam ${_faltamT} · média atual ${_mediaT}/mês</div>
+            <div style="font-size:10px;color:var(--g2);margin-top:2px">Faltam ${_faltamT} · média ${_mediaT}/mês</div>
           </div>
         </div>
       </div>`;
