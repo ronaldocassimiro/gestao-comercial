@@ -1760,7 +1760,6 @@ function renderShare() {
     {title:'Saídas (acum. 2026)',real:_saiT,meta:META.saidas_tech,realFmt:_saiT+' saídas',metaFmt:META.saidas_tech+' saídas',metaAcum:_metaST,inverso:true},
   ]);
 
-  // Gráficos acompanhamento mensal consolidado
   // Gráficos mensais
   const mensalEl = document.getElementById('share-mensal');
   if (mensalEl) mensalEl.innerHTML = `
@@ -1855,9 +1854,9 @@ function renderShare() {
   }
 
   function getEntradaDate_contab(r){ const v=fv(r,'DatadoContrato','Data_x0020_do_x0020_Contrato'); return v||null; }
-  function getEntradaDate_tech(r){ const v=fv(r,'DatadoContrato','Data_x0020_do_x0020_Contrato','field_11'); if(!v) return null; if(v.includes('/')) { const p=v.split('/'); return p.length===3?`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`:null; } return v; }
+  function getEntradaDate_tech(r){ const v=r['field_16']||''; if(!v) return null; try{const d=new Date(v);if(!isNaN(d))return d.toISOString().split('T')[0];}catch{}return null; }
   function getSaidaDate_contab(r){ const v=fv(r,'Compet_x00ea_nciadeSa_x00ed_da','Compet_x00ea_nciadeSa_x00ed_a'); if(!v) return null; const p=v.split('/'); return p.length===2?`${p[1]}-${p[0].padStart(2,'0')}-01`:null; }
-  function getSaidaDate_tech(r){ const v=r['field_26']||''; if(!v) return null; const p=String(v).split('/'); return p.length===2?`${p[1]}-${p[0].padStart(2,'0')}-01`:null; }
+  function getSaidaDate_tech(r){ const v=r['field_26']||''; if(!v) return null; const s=String(v).trim(); if(/^\d{2}\/\d{4}$/.test(s)){const p=s.split('/');return `${p[1]}-${p[0].padStart(2,'0')}-15`;} return null; }
 
   const wEntC = countByWeek(rawContab, getEntradaDate_contab);
   const wEntT = countByWeek(rawTech, getEntradaDate_tech);
