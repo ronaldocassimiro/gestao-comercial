@@ -471,7 +471,7 @@ main{max-width:1400px;margin:0 auto;padding:18px}
       <!-- Acompanhamento mensal consolidado -->
       <div class="sec-title" style="margin-bottom:10px">📅 Acompanhamento Mensal 2026 — Meta vs Realizado</div>
       <div id="share-mensal" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px" id="share-extra-cards"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px" id="share-extra-cards"></div>
       <div class="sec-title" style="margin-bottom:10px">📈 Evolução Semanal — Últimos 6 Meses</div>
       <div id="share-semanal"></div>
     </div>
@@ -1935,26 +1935,26 @@ function renderShare() {
     const _sCat = rawContab.filter(r=>getSaidaYM_contab(r)===_curPeriod2).length;
     const _sTat = rawTech.filter(r=>getSaidaYM_tech(r)===_curPeriod2).length;
     extraEl.innerHTML = `
-      <div class="card" style="padding:12px">
-        <div class="sec-title" style="font-size:10px;margin-bottom:8px">Saldo Líquido</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-          <div style="background:var(--g3);border-radius:6px;padding:8px;text-align:center">
-            <div style="font-size:10px;color:var(--g1);margin-bottom:4px">${_prevLabel}</div>
-            <div style="display:flex;justify-content:center;gap:6px;margin-bottom:4px">
-              <span style="font-size:13px;font-weight:600;color:#0C7488">+${_eC+_eT}</span>
-              <span style="font-size:13px;font-weight:600;color:#F62642">-${_sC+_sT}</span>
-              <span style="font-size:13px;font-weight:600;color:${_saldoCor}">${_saldoSign(_saldoTot)}</span>
+      <div class="card" style="padding:14px">
+        <div class="sec-title" style="font-size:10px;margin-bottom:10px">Saldo Líquido</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:var(--g3);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:11px;color:var(--g1);margin-bottom:6px;font-weight:500">${_prevLabel}</div>
+            <div style="display:flex;justify-content:center;gap:10px;margin-bottom:6px">
+              <div><div style="font-size:10px;color:var(--g2)">Ent</div><div style="font-size:18px;font-weight:600;color:#0C7488">+${_eC+_eT}</div></div>
+              <div><div style="font-size:10px;color:var(--g2)">Saí</div><div style="font-size:18px;font-weight:600;color:#F62642">-${_sC+_sT}</div></div>
+              <div><div style="font-size:10px;color:var(--g2)">Saldo</div><div style="font-size:18px;font-weight:600;color:${_saldoCor}">${_saldoSign(_saldoTot)}</div></div>
             </div>
-            <div style="font-size:9px;color:var(--g2)">C ${_saldoSign(_eC)}/${_saldoSign(-_sC)} · T ${_saldoSign(_eT)}/${_saldoSign(-_sT)}</div>
+            <div style="font-size:10px;color:var(--g2)">C ${_saldoSign(_eC)}/${_saldoSign(-_sC)} · T ${_saldoSign(_eT)}/${_saldoSign(-_sT)}</div>
           </div>
-          <div style="background:var(--g3);border-radius:6px;padding:8px;text-align:center">
-            <div style="font-size:10px;color:var(--g1);margin-bottom:4px">${_mesAtualLabel}/${_anoAtual}</div>
-            <div style="display:flex;justify-content:center;gap:6px;margin-bottom:4px">
-              <span style="font-size:13px;font-weight:600;color:#0C7488">+${_eCat+_eTat}</span>
-              <span style="font-size:13px;font-weight:600;color:#F62642">-${_sCat+_sTat}</span>
-              <span style="font-size:13px;font-weight:600;color:${(_eCat+_eTat-_sCat-_sTat)>=0?'#1a7a3a':'#F62642'}">${_saldoSign(_eCat+_eTat-_sCat-_sTat)}</span>
+          <div style="background:var(--g3);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:11px;color:var(--g1);margin-bottom:6px;font-weight:500">${_mesAtualLabel}/${_anoAtual}</div>
+            <div style="display:flex;justify-content:center;gap:10px;margin-bottom:6px">
+              <div><div style="font-size:10px;color:var(--g2)">Ent</div><div style="font-size:18px;font-weight:600;color:#0C7488">+${_eCat+_eTat}</div></div>
+              <div><div style="font-size:10px;color:var(--g2)">Saí</div><div style="font-size:18px;font-weight:600;color:#F62642">-${_sCat+_sTat}</div></div>
+              <div><div style="font-size:10px;color:var(--g2)">Saldo</div><div style="font-size:18px;font-weight:600;color:${(_eCat+_eTat-_sCat-_sTat)>=0?'#1a7a3a':'#F62642'}">${_saldoSign(_eCat+_eTat-_sCat-_sTat)}</div></div>
             </div>
-            <div style="font-size:9px;color:var(--g2)">C +${_eCat}/-${_sCat} · T +${_eTat}/-${_sTat}</div>
+            <div style="font-size:10px;color:var(--g2)">C +${_eCat}/-${_sCat} · T +${_eTat}/-${_sTat}</div>
           </div>
         </div>
       </div>
@@ -1973,7 +1973,7 @@ function renderShare() {
               <span style="font-size:20px;font-weight:600;color:${_corC}">~${_ritmoC}</span>
               <span style="font-size:10px;color:var(--g1)">contratos/mês</span>
             </div>
-            <div style="font-size:10px;color:var(--g2);margin-top:2px">Faltam ${_faltamC} · média ${_mediaC}/mês</div>
+            <div style="font-size:10px;color:var(--g2);margin-top:2px">Faltam ${_faltamC} · média atual ${_mediaC}/mês</div>
           </div>
           <div style="background:var(--g3);border-radius:8px;padding:10px">
             <div style="font-size:10px;color:var(--g1);margin-bottom:4px">Tech</div>
@@ -1981,7 +1981,7 @@ function renderShare() {
               <span style="font-size:20px;font-weight:600;color:${_corT}">~${_ritmoT}</span>
               <span style="font-size:10px;color:var(--g1)">contratos/mês</span>
             </div>
-            <div style="font-size:10px;color:var(--g2);margin-top:2px">Faltam ${_faltamT} · média ${_mediaT}/mês</div>
+            <div style="font-size:10px;color:var(--g2);margin-top:2px">Faltam ${_faltamT} · média atual ${_mediaT}/mês</div>
           </div>
         </div>
       </div>`;
