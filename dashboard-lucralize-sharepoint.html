@@ -1908,7 +1908,7 @@ function renderShare() {
     [...Object.entries(_motivosC), ...Object.entries(_motivosT)].forEach(([k,v])=>{if(k&&k!=='N/D')_motivosTot[k]=(_motivosTot[k]||0)+v;});
     const _top3 = Object.entries(_motivosTot).filter(([k])=>k).sort((a,b)=>b[1]-a[1]).slice(0,8);
     const _maxMot = _top3[0]?.[1]||1;
-    const _motivosHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px">${_top3.map(([k,v])=>`
+    const _motivosHTML = `<div style="display:grid;grid-template-columns:${_top3.length>4?'1fr 1fr':'1fr'};gap:8px">${_top3.map(([k,v])=>`
       <div>
         <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
           <span style="color:var(--g1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px">${k}</span>
