@@ -469,8 +469,8 @@ main{max-width:1400px;margin:0 auto;padding:18px}
       </div>
 
       <!-- Acompanhamento mensal consolidado -->
-      <div class="sec-title" style="margin-bottom:10px">📅 Acompanhamento Mensal 2026 — Meta vs Realizado</div>
-      <div id="share-mensal" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px"></div>
+      <div class="sec-title" style="margin-bottom:6px;margin-top:8px">📅 Acompanhamento Mensal 2026 — Meta vs Realizado</div>
+      <div id="share-mensal" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px" id="share-extra-cards"></div>
       <div class="sec-title" style="margin-bottom:10px">📈 Evolução Semanal — Últimos 6 Meses</div>
       <div id="share-semanal"></div>
@@ -1906,16 +1906,16 @@ function renderShare() {
     const _motivosT = countBy(rawTech.filter(r=>{const s=getSaidaYM_tech(r);return s&&s>='2026-01';}), r=>fv(r,'MotivodaSa_x00ed_da','Motivo da Saída'));
     const _motivosTot = {};
     [...Object.entries(_motivosC), ...Object.entries(_motivosT)].forEach(([k,v])=>{if(k&&k!=='N/D')_motivosTot[k]=(_motivosTot[k]||0)+v;});
-    const _top3 = Object.entries(_motivosTot).filter(([k])=>k).sort((a,b)=>b[1]-a[1]).slice(0,4);
+    const _top3 = Object.entries(_motivosTot).filter(([k])=>k).sort((a,b)=>b[1]-a[1]).slice(0,8);
     const _maxMot = _top3[0]?.[1]||1;
-    const _motivosHTML = _top3.map(([k,v])=>`
+    const _motivosHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${_top3.map(([k,v])=>`
       <div>
         <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
-          <span style="color:var(--g1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">${k}</span>
-          <span style="font-weight:600;color:var(--navy)">${v}</span>
+          <span style="color:var(--g1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px">${k}</span>
+          <span style="font-weight:600;color:var(--navy);margin-left:4px">${v}</span>
         </div>
-        <div style="height:5px;background:var(--g3);border-radius:3px"><div style="width:${Math.round(v/_maxMot*100)}%;height:100%;background:#F62642;border-radius:3px"></div></div>
-      </div>`).join('');
+        <div style="height:4px;background:var(--g3);border-radius:2px"><div style="width:${Math.round(v/_maxMot*100)}%;height:100%;background:#F62642;border-radius:2px"></div></div>
+      </div>`).join('')}</div>`;
 
     // Card 3: Ritmo necessário
     const _mesesRestantes = 12 - new Date().getMonth();
@@ -1941,18 +1941,18 @@ function renderShare() {
           <div style="background:var(--g3);border-radius:8px;padding:12px;text-align:center">
             <div style="font-size:11px;color:var(--g1);margin-bottom:6px;font-weight:500">${_prevLabel}</div>
             <div style="display:flex;justify-content:center;gap:10px;margin-bottom:6px">
-              <div><div style="font-size:10px;color:var(--g2)">Ent</div><div style="font-size:18px;font-weight:600;color:#0C7488">+${_eC+_eT}</div></div>
-              <div><div style="font-size:10px;color:var(--g2)">Saí</div><div style="font-size:18px;font-weight:600;color:#F62642">-${_sC+_sT}</div></div>
-              <div><div style="font-size:10px;color:var(--g2)">Saldo</div><div style="font-size:18px;font-weight:600;color:${_saldoCor}">${_saldoSign(_saldoTot)}</div></div>
+              <div><div style="font-size:10px;color:var(--g2)">Ent</div><div style="font-size:22px;font-weight:600;color:#0C7488">+${_eC+_eT}</div></div>
+              <div><div style="font-size:10px;color:var(--g2)">Saí</div><div style="font-size:22px;font-weight:600;color:#F62642">-${_sC+_sT}</div></div>
+              <div><div style="font-size:10px;color:var(--g2)">Saldo</div><div style="font-size:22px;font-weight:600;color:${_saldoCor}">${_saldoSign(_saldoTot)}</div></div>
             </div>
             <div style="font-size:10px;color:var(--g2)">C ${_saldoSign(_eC)}/${_saldoSign(-_sC)} · T ${_saldoSign(_eT)}/${_saldoSign(-_sT)}</div>
           </div>
           <div style="background:var(--g3);border-radius:8px;padding:12px;text-align:center">
             <div style="font-size:11px;color:var(--g1);margin-bottom:6px;font-weight:500">${_mesAtualLabel}/${_anoAtual}</div>
             <div style="display:flex;justify-content:center;gap:10px;margin-bottom:6px">
-              <div><div style="font-size:10px;color:var(--g2)">Ent</div><div style="font-size:18px;font-weight:600;color:#0C7488">+${_eCat+_eTat}</div></div>
-              <div><div style="font-size:10px;color:var(--g2)">Saí</div><div style="font-size:18px;font-weight:600;color:#F62642">-${_sCat+_sTat}</div></div>
-              <div><div style="font-size:10px;color:var(--g2)">Saldo</div><div style="font-size:18px;font-weight:600;color:${(_eCat+_eTat-_sCat-_sTat)>=0?'#1a7a3a':'#F62642'}">${_saldoSign(_eCat+_eTat-_sCat-_sTat)}</div></div>
+              <div><div style="font-size:10px;color:var(--g2)">Ent</div><div style="font-size:22px;font-weight:600;color:#0C7488">+${_eCat+_eTat}</div></div>
+              <div><div style="font-size:10px;color:var(--g2)">Saí</div><div style="font-size:22px;font-weight:600;color:#F62642">-${_sCat+_sTat}</div></div>
+              <div><div style="font-size:10px;color:var(--g2)">Saldo</div><div style="font-size:22px;font-weight:600;color:${(_eCat+_eTat-_sCat-_sTat)>=0?'#1a7a3a':'#F62642'}">${_saldoSign(_eCat+_eTat-_sCat-_sTat)}</div></div>
             </div>
             <div style="font-size:10px;color:var(--g2)">C +${_eCat}/-${_sCat} · T +${_eTat}/-${_sTat}</div>
           </div>
