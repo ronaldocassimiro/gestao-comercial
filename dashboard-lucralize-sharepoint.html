@@ -470,7 +470,9 @@ main{max-width:1400px;margin:0 auto;padding:18px}
 
       <!-- Acompanhamento mensal consolidado -->
       <div class="sec-title" style="margin-bottom:10px">📅 Acompanhamento Mensal 2026 — Meta vs Realizado</div>
-      <div id="share-mensal" style="display:grid;grid-template-columns:1fr 1fr;gap:14px"></div>
+      <div id="share-mensal" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px"></div>
+      <div class="sec-title" style="margin-bottom:10px">📈 Evolução Semanal — Últimos 3 Meses</div>
+      <div id="share-semanal"></div>
     </div>
 
   </main>
@@ -1759,11 +1761,50 @@ function renderShare() {
   ]);
 
   // Gráficos acompanhamento mensal consolidado
-  // Gráfico semanal — últimas 12 semanas (3 meses)
+  // Gráficos mensais
   const mensalEl = document.getElementById('share-mensal');
   if (mensalEl) mensalEl.innerHTML = `
-    <div class="card" style="grid-column:1/-1">
-      <div class="ct" style="margin-bottom:8px">Evolução Semanal — Últimos 3 Meses</div>
+    <div class="card">
+      <div class="ct" style="margin-bottom:8px">Entradas — Meta vs Realizado <span class="ct-badge badge-teal">Mês a Mês</span></div>
+      <div class="cw" style="height:220px"><canvas id="c-share-ent"></canvas></div>
+      <div class="leg"><span><span class="ld" style="background:rgba(14,20,40,0.15)"></span>Meta</span><span><span class="ld" style="background:#0C7488"></span>Realizado</span></div>
+    </div>
+    <div class="card">
+      <div class="ct" style="margin-bottom:8px">Saídas — Meta vs Realizado <span class="ct-badge badge-red">Mês a Mês · Meta = Controle de Churn</span></div>
+      <div class="cw" style="height:220px"><canvas id="c-share-sai"></canvas></div>
+      <div class="leg"><span><span class="ld" style="background:rgba(246,38,66,0.15)"></span>Meta máxima</span><span><span class="ld" style="background:#F62642"></span>Realizado</span><span style="font-size:10px;color:#657786">(abaixo da meta = bom ✓)</span></div>
+    </div>`;
+
+  const realMC = buildRealMensal2026(rawContab, getEntradaYM_contab, getSaidaYM_contab);
+  const realMT = buildRealMensal2026(rawTech, getEntradaYM_tech, getSaidaYM_tech);
+  const realEtot = realMC.entradas.map((v,i)=>v+realMT.entradas[i]);
+  const realStot = realMC.saidas.map((v,i)=>v+realMT.saidas[i]);
+  const nR = new Date().getMonth()+1;
+
+  destroyChart('c-share-ent');
+  const ctxE = document.getElementById('c-share-ent');
+  if(ctxE){
+    const dlE={id:'dlse',afterDatasetsDraw(chart){const ctx=chart.ctx;chart.data.datasets.forEach((ds,di)=>{const color=di===0?'#888':'#0C7488';const meta=chart.getDatasetMeta(di);meta.data.forEach((bar,i)=>{const val=ds.data[i];if(!val&&val!==0)return;ctx.save();ctx.font='9px Poppins,sans-serif';ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(val,bar.x,bar.y-2);ctx.restore();});});}};
+    charts['c-share-ent']=new Chart(ctxE,{type:'bar',plugins:[dlE],data:{labels:MESES_2026,datasets:[
+      {label:'Meta',data:META_E_TOTAL_M,backgroundColor:'rgba(14,20,40,0.12)',borderRadius:3,borderSkipped:false},
+      {label:'Realizado',data:[...realEtot.slice(0,nR),...Array(12-nR).fill(null)],backgroundColor:'#0C7488',borderRadius:3,borderSkipped:false},
+    ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:16}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw??'—'}`}}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#888',autoSkip:false}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10},color:'#888'}}}}});
+  }
+
+  destroyChart('c-share-sai');
+  const ctxS = document.getElementById('c-share-sai');
+  if(ctxS){
+    const dlS={id:'dlss',afterDatasetsDraw(chart){const ctx=chart.ctx;chart.data.datasets.forEach((ds,di)=>{const color=di===0?'#888':'#F62642';const meta=chart.getDatasetMeta(di);meta.data.forEach((bar,i)=>{const val=ds.data[i];if(!val&&val!==0)return;ctx.save();ctx.font='9px Poppins,sans-serif';ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(val,bar.x,bar.y-2);ctx.restore();});});}};
+    charts['c-share-sai']=new Chart(ctxS,{type:'bar',plugins:[dlS],data:{labels:MESES_2026,datasets:[
+      {label:'Meta máxima',data:META_S_MENSAL,backgroundColor:'rgba(246,38,66,0.15)',borderRadius:3,borderSkipped:false},
+      {label:'Realizado',data:[...realStot.slice(0,nR),...Array(12-nR).fill(null)],backgroundColor:'#F62642',borderRadius:3,borderSkipped:false},
+    ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:16}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw??'—'}`}}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#888',autoSkip:false}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10},color:'#888'}}}}});
+  }
+
+  // Gráfico semanal — últimas 12 semanas
+  const semanalEl = document.getElementById('share-semanal');
+  if (semanalEl) semanalEl.innerHTML = `
+    <div class="card">
       <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;font-size:11px;color:var(--g1)">
         <span style="display:flex;align-items:center;gap:4px"><span style="width:16px;height:2px;background:#0C7488;display:inline-block"></span>Ent Contab</span>
         <span style="display:flex;align-items:center;gap:4px"><span style="width:16px;height:2px;background:#91DBE4;display:inline-block"></span>Ent Tech</span>
